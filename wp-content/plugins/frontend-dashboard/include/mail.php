@@ -650,38 +650,4 @@ class RhMail {
     }
 
 
-    public function new_contractor_admin_email($name, $link, $rnumber){
-        ?>
-        <h1 style="font-size:30px;">You've received a new contractor request from <?=$name?>.</h1>
-        <p style="font-size:17px;padding-right:30px;">
-            Contractor request number is <strong><?=$rnumber?></strong>.<br><br>
-
-            In the meantime, you can review new request <a href="<?=$link?>" target="_blank">here</a>.<br><br>
-
-            -The RoofHub Administrator
-        </p>
-        <?php
-        $message = ob_get_contents();
-        ob_end_clean();
-        return $message;
-    }
-
-
-    public function new_req_to_contractor_email($name, $link){
-        ?>
-        <h1 style="font-size:30px;">You've received a new roofing request from <?=$name?>.</h1>
-        <p style="font-size:17px;padding-right:30px;">
-            Please Review the request & accept the bid if it is suitable for you.This request valid only for 2 hours<br><br>
-
-            In the meantime, you can review new request <a href="<?=$link?>" target="_blank">here</a>.<br><br>
-
-            -The RoofHub Administrator
-        </p>
-        <?php
-        $message = ob_get_contents();
-        ob_end_clean();
-        return $message;
-    }
-
-
 }

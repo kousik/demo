@@ -1,2 +1,0 @@
-[10-Apr-2018 11:34:25 CST6CDT] PHP Fatal error:  Call to undefined function get_header() in /home/roofhubcom/public_html/wp-content/themes/twentyseventeen/404.php on line 13
-[11-Apr-2018 03:24:46 CST6CDT] PHP Fatal error:  Call to undefined function get_template_part() in /home/roofhubcom/public_html/wp-content/themes/twentyseventeen/footer.php on line 22

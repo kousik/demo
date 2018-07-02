@@ -6,23 +6,79 @@
  * Time: 4:47 PM
  */
 
+// Add custom roles to a specific blog
+function isms_add_custom_roles_to_all_sites(  ) {
+    $blog_id = 1;
+    if ( $blog_id ) {
 
-//add_action('genesis_header_right', 'fdb_top_login_menu', 20);
+        $admin_prexisting = get_role( 'administrator' );
 
-function fdb_top_login_menu(){
-    if(is_user_logged_in()) :
-    ?>
-        <p class="navbar-text1 navbar-right sign-up-menu"><a href="<?=site_url('dashboard')?>">My Account</a> <a href="<?=wp_logout_url( home_url() )?>">Logout</a></p>
-    <?php
-    else :
-        ?>
-        <p class="navbar-text navbar-right sign-up-menu"><a href="<?=site_url('sign-in')?>">Log In</a> <a href="<?=site_url('sign-up')?>">Sign Up</a></p>
-    <?php
-    endif;
+
+        $admin_prexisting->add_cap( 'distributor_view' );
+        $admin_prexisting->add_cap( 'agent_view' );
+
+        $distributor = add_role(
+            'distributor',
+            __( 'Distributor' ),
+            array(
+                'read'                 => true,
+                'upload_media'         => true,
+                'upload_files'         => true,
+                'distributor_view'     => true,
+            )
+        );
+
+        $agent = add_role(
+            'agent',
+            __( 'Agent' ),
+            array(
+                'read'                 => true,
+                'upload_media'         => true,
+                'upload_files'         => true,
+                'agent_view'           => true,
+            )
+        );
+
+
+        $customer = add_role(
+            'customer',
+            __( 'Customer' ),
+            array(
+                'read'                 => true,
+                'upload_media'         => true,
+                'upload_files'         => true
+            )
+        );
+
+
+
+
+
+
+        if ( $distributor === null ) {
+            error_log( 'Account Admin nternal Irole not created for blog ' . $blog_id );
+        }
+
+        if ( $agent === null ) {
+            error_log( 'Account Admin customer role not created for blog ' . $blog_id );
+        }
+
+        if ( $customer === null ) {
+            error_log( 'Read write customer role not created for blog ' . $blog_id );
+        }
+    }
+}
+
+// Remove custom roles from a blog
+function isms_remove_custom_roles_from_all_sites() {
+    remove_role( 'distributor' );
+    remove_role( 'agent' );
+    remove_role( 'customer' );
 }
 
 
-function fdb_get_state($country_code = 231){
+
+function fdb_get_state($country_code = 101){
     global $wpdb;
     //SELECT * FROM `wp_states` WHERE `country_id` = 231
     $states = $wpdb->get_results("SELECT * FROM `wp_states` WHERE `country_id` = {$country_code}");
@@ -30,7 +86,7 @@ function fdb_get_state($country_code = 231){
 }
 
 
-function fdb_get_city($city_name = false){
+function fdb_get_city($state_name = false){
     global $wpdb;
     global $wpdb;
     $state_id = $total = $wpdb->get_var("SELECT id FROM `wp_states` WHERE `country_id` = 231 AND `name` = '{$city_name}'");
@@ -42,7 +98,7 @@ add_action('fed_get_city_data_processing', 'fed_get_city_data', 20);
 
 function fed_get_city_data(){
     global $wpdb;
-    $state_id = $total = $wpdb->get_var("SELECT id FROM `wp_states` WHERE `country_id` = 231 AND `name` = '{$_POST['state_id']}'");
+    $state_id = $total = $wpdb->get_var("SELECT id FROM `wp_states` WHERE `country_id` = 101 AND `name` = '{$_POST['state_id']}'");
     //SELECT * FROM `wp_states` WHERE `country_id` = 231
     $cities = $wpdb->get_results("SELECT * FROM `wp_cities` WHERE `state_id` = {$state_id}");
     ob_start();
@@ -65,7 +121,7 @@ function fed_get_city_data(){
 add_filter('pods_form_ui_field_pick_data_us_states', 'pod_get_city', 1, 10);
 
 function pod_get_city($data){
-    $states = fdb_get_state(231);
+    $states = fdb_get_state(101);
     $data = [];
     foreach ($states as $key => $s):
         $data[$s->name] = $s->name;
@@ -73,134 +129,6 @@ function pod_get_city($data){
     return $data;
 }
 
-add_action('fed_roofing_request_processing', 'fed_roofing_request_processing', 20);
-
-function fed_roofing_request_processing() {
-    global $wpdb;
-
-
-
-    $newuser_email = false;
-
-    $post = $_POST;
-    if ( !is_user_logged_in() ) {
-        $user_id = username_exists( $post['email_address'] );
-        if(!$user_id){
-            $user_data = get_user_by('email', $post['email_address']);
-            $user_id = $user_data->ID;
-        }
-
-        if ( !$user_id and email_exists($post['email_address']) == false ) {
-            $newuser_email = true;
-            $random_password = wp_generate_password($length = 12, $include_standard_special_chars = false);
-            $user_id = wp_create_user(epic_data_escape($post['email_address']), $random_password, epic_data_escape($post['email_address']));
-        }
-
-
-    } else {
-        $current_user = wp_get_current_user();
-        $user_id = $current_user->ID;
-    }
-
-
-    $pod = pods('roofhub_request');
-    unset($post['fed_ajax_hook']);
-    unset($post['_wpnonce']);
-    unset($post['_wp_http_referer']);
-    unset($post['noreset']);
-    $data = $post;
-    error_log("Roofhub Request: " . print_r($data, true));
-    $id = $pod->add($data);
-
-    if($_FILES && isset($_FILES['roof_pictures'])):
-        $aid =[];
-        fixFilesArray($_FILES['roof_pictures']);
-        foreach ($_FILES['roof_pictures'] as $fkey => $rpfiles):
-            $aid[] = importImage($rpfiles);
-        endforeach;
-        $pod->save( 'roof_pictures', $aid, $id );
-    endif;
-
-    if($_FILES && isset($_FILES['roof_elevations_files'])):
-        $aid =[];
-        fixFilesArray($_FILES['roof_elevations_files']);
-        foreach ($_FILES['roof_elevations_files'] as $ckey => $rpfiles):
-            $aid[] = importImage($rpfiles);
-        endforeach;
-        $pod->save( 'roof_elevations_files', $aid, $id );
-    endif;
-
-    $pod->save( 'author', $user_id, $id );
-    $pod->save( 'status', 'Request', $id );
-
-    $pod->save( 'name', $post['first_name']."-".$post['state']."-".$post['city']."-".$post['zip_code'], $id );
-
-
-    if($newuser_email):
-        update_user_meta($user_id, 'first_name', $post['first_name']);
-        update_user_meta($user_id, 'last_name', $post['last_name']);
-        update_user_meta($user_id, 'address', $post['address']);
-        update_user_meta($user_id, 'state', $post['state']);
-        update_user_meta($user_id, 'city', $post['city']);
-        update_user_meta($user_id, 'zip_code', $post['zip_code']);
-        update_user_meta($user_id, 'phone_number', $post['phone_number']);
-        $user_data = get_user_by('email', $post['email_address']);
-        $u = new WP_User( $user_id );
-        $u->set_role( 'customer' );
-        $mail = new RhMail();
-        $email_body = $mail->new_account_email($post['first_name'], $random_password,$post['email_address']);
-        $subject = "RoofHub: New Account Details";
-        $send_result = $mail->send_general_email( $email_body,  $post['email_address'], $subject, $user_data );
-    endif;
-
-
-    if($post['time_frame_needed'] == 'Urgent - need done immediately') :
-        $contractors = get_featured_contractors($post['state']);
-    else:
-        $contractors = get_all_contractors($post['state']);
-    endif;
-    if($contractors):
-        foreach($contractors as $conid):
-            $conpod = pods( 'contractor', $conid );
-
-            $as = $conpod->field( 'assign_roofing_request' , null, true  );
-            $ass_id = [];
-            if($as):
-                foreach($as as $akey => $a):
-                    $ass_id[] =  $a['id'];
-                endforeach;
-                array_push($ass_id, $id);
-            else:
-                $ass_id = $id;
-            endif;
-
-
-            $res = $conpod->save( ['assign_roofing_request'=>$ass_id] );
-
-            $link = site_url("/dashboard/")."?menu_type=user&menu_slug=assigned_roofing_request&fed_nonce=" . wp_create_nonce( 'fed_nonce' )."&display=view&rid=".encrypt_decrypt('encrypt',$id);
-            $conuser = $conpod->field( 'author' , null, true  );
-            $mail = new RhMail();
-            $email_body = $mail->new_req_to_contractor_email($post['first_name'], $link);
-            $subject = "RoofHub: New Roofing request inboxed";
-            $send_result = $mail->send_general_email( $email_body,  $conuser['user_email'], $subject );
-        endforeach;
-    endif;
-
-    $mail = new RhMail();
-    $link = site_url("/dashboard/")."?menu_type=user&menu_slug=your_roofing_request&fed_nonce=" . wp_create_nonce( 'fed_nonce' )."&display=view&rid=".encrypt_decrypt('encrypt',$id);
-
-    $email_body = $mail->new_request_email_to_customer($post['first_name'], $link, $id);
-    $subject = "RoofHub: Thanks for your request";
-    $send_result = $mail->send_general_email( $email_body,  $post['email_address'], $subject, $user_data );
-
-    $link = site_url("/dashboard/")."?menu_type=user&menu_slug=all_roofing_requests&fed_nonce=". wp_create_nonce( 'fed_nonce' )."&display=view&rid=".encrypt_decrypt('encrypt',$id);
-    $admin_email = get_option( 'admin_email' );
-    $email_body = $mail->new_account_email($post['first_name'], $link, $id);
-    $subject = "RoofHub: New Request Details";
-    $send_result = $mail->send_general_email( $email_body,  $admin_email, $subject, $user_data );
-
-    echo "Successfully send!";die;
-}
 
 
 function fixFilesArray(&$files)
@@ -230,37 +158,12 @@ add_action( 'fed_override_default_page', 'fed_frontend_dashboard_menu_container_
 
 function fed_menu_default_page_custom($rbval, $menus, $index){
 
-    if($index == 'all_roofing_requests'){
-        return false;
-    }
-
-    if($index == 'all_contractors'){
-        return false;
-    }
 
     if($index == 'settings'){
         return false;
     }
 
-    if($index == 'my_advertisement'){
-        return false;
-    }
 
-    if($index == 'payments_invoice'){
-        return false;
-    }
-
-    if($index == 'your_roofing_requests'){
-        return false;
-    }
-
-    if($index == 'contractor_information'){
-        return false;
-    }
-
-    if($index == 'assigned_roofing_request'){
-        return false;
-    }
     return $rbval;
 }
 
@@ -271,52 +174,12 @@ function fed_menu_default_page_custom($rbval, $menus, $index){
  * @param $menu_items
  */
 function fed_frontend_dashboard_menu_container_fn( $menu_items, $index) {
-    //print_r($menu_items);
-    //$display =
-    if ( isset($menu_items[$index]['menu_slug']) && $menu_items[$index]['menu_slug'] === 'all_roofing_requests' ) {
-        $template = epic_community_template('admin-all-request', '/dashboard/');
-        load_template( $template );
-    }
 
-
-
-    if ( isset($menu_items[$index]['menu_slug']) && $menu_items[$index]['menu_slug'] === 'all_contractors' ) {
-        $template = epic_community_template('admin-contractor-request', '/dashboard/');
-        load_template( $template );
-    }
-
-
-    if ( isset($menu_items[$index]['menu_slug']) && $menu_items[$index]['menu_slug'] === 'my_advertisement' ) {
-        $template = epic_community_template('admin-advertisement', '/dashboard/');
-        load_template( $template );
-    }
 
     if ( isset($menu_items[$index]['menu_slug']) && $menu_items[$index]['menu_slug'] === 'settings' ) {
         $template = epic_community_template('settings', '/dashboard/');
         load_template( $template );
     }
-
-    if ( isset($menu_items[$index]['menu_slug']) && $menu_items[$index]['menu_slug'] === 'payments_invoice' ) {
-        $template = epic_community_template('payments', '/dashboard/');
-        load_template( $template );
-    }
-
-    if ( isset($menu_items[$index]['menu_slug']) && $menu_items[$index]['menu_slug'] === 'your_roofing_requests' ) {
-        $template = epic_community_template('customer-rf-requests', '/dashboard/');
-        load_template( $template );
-    }
-
-    if ( isset($menu_items[$index]['menu_slug']) && $menu_items[$index]['menu_slug'] === 'contractor_information' ) {
-        $template = epic_community_template('contractor-information', '/dashboard/');
-        load_template( $template );
-    }
-
-    if ( isset($menu_items[$index]['menu_slug']) && $menu_items[$index]['menu_slug'] === 'assigned_roofing_request' ) {
-        $template = epic_community_template('assigned-roofing-request', '/dashboard/');
-        load_template( $template );
-    }
-
-
 }
 
 
@@ -429,130 +292,7 @@ function fed_check_valid_email_processing(){
 }
 
 
-add_action('fed_get_form_html_data_processing', 'fed_get_form_html_data_processing', 20);
 
-function fed_get_form_html_data_processing(){
-    global $wpdb;
-    $ri = pods( 'referral_information' );
-
-    ob_start();
-   ?>
-    <div class="ref-box" style="border-bottom: 1px solid #ccc; margin-bottom: 10px;">
-        <a class="btn btn-danger js-del-htm pull-right" style="margin-bottom: 10px;">Delete-</a>
-        <div class="form-group">
-            <label for="fname"><?=$ri->pod_data['fields']['ref_name']['label']?><span style="color: red;">*</span></label>
-            <input type="text" name="<?=$ri->pod_data['fields']['ref_name']['name']?>[]" placeholder="<?=$ri->pod_data['fields']['ref_name']['label']?>" class="<?=$ri->pod_data['fields']['ref_name']['name']?>" />
-        </div>
-        <div class="form-group">
-            <label for="fname"><?=$ri->pod_data['fields']['ref_phone_number']['label']?><span style="color: red;">*</span></label>
-            <input type="text" name="<?=$ri->pod_data['fields']['ref_phone_number']['name']?>[]" placeholder="<?=$ri->pod_data['fields']['ref_phone_number']['label']?>" class="<?=$ri->pod_data['fields']['ref_phone_number']['name']?>" />
-        </div>
-        <div class="form-group">
-            <label for="fname"><?=$ri->pod_data['fields']['ref_email']['label']?></label>
-            <input type="text" name="<?=$ri->pod_data['fields']['ref_email']['name']?>[]" placeholder="<?=$ri->pod_data['fields']['ref_email']['label']?>" />
-        </div>
-    </div>
-
-    <?php
-    $message = ob_get_contents();
-    ob_end_clean();
-    echo $message; die;
-}
-
-
-add_action('fed_contractor_request_processing', 'fed_contractor_request_processing', 20);
-
-function fed_contractor_request_processing() {
-    global $wpdb;
-
-
-
-    $newuser_email = false;
-
-    $post = $_POST;
-
-    $random_password = wp_generate_password($length = 12, $include_standard_special_chars = false);
-    $user_id = wp_create_user(epic_data_escape($post['email_address']), $random_password, epic_data_escape($post['email_address']));
-
-
-
-    $pod = pods('contractor');
-    unset($post['fed_ajax_hook']);
-    unset($post['_wpnonce']);
-    unset($post['_wp_http_referer']);
-    unset($post['noreset']);
-    unset($post['redirect']);
-    $data = $post;
-    error_log("Contractor Request: " . print_r($data, true));
-    $id = $pod->add($data);
-
-
-    $pod->save( 'author', $user_id, $id );
-    $pod->save( 'status', 0, $id );
-    $pod->save( 'featured_contractor', "No", $id );
-    $pod->save( 'premium_contractor', "No", $id );
-
-    if($_FILES && isset($_FILES['company_logo'])):
-        $aid =[];
-        fixFilesArray($_FILES['company_logo']);
-        foreach ($_FILES['company_logo'] as $ckey => $rpfiles):
-            $aid[] = importImage($rpfiles);
-        endforeach;
-        $pod->save( 'company_logo', $aid, $id );
-    endif;
-
-    //if($newuser_email):
-        update_user_meta($user_id, 'first_name', $post['contact_name']);
-        update_user_meta($user_id, 'address', $post['business_address']);
-        update_user_meta($user_id, 'state', $post['state']);
-        update_user_meta($user_id, 'city', $post['city']);
-        update_user_meta($user_id, 'zip_code', $post['zip_code']);
-        update_user_meta($user_id, 'phone_number', $post['phone_number']);
-        $u = new WP_User( $user_id );
-        $u->set_role( 'contractor' );
-
-    //endif;
-
-    $wpdb->query("UPDATE `wp_users` SET user_status = 1 WHERE ID = '{$user_id}';");
-
-    $ref_id = [];
-    error_log('RF LOG:'.print_r($post['ref_name'], true));
-    foreach ($post['ref_name'] as $rkey => $ref_name):
-        $rdata = [];
-        $pod_ri = pods('referral_information');
-        $rdata['ref_name'] = $ref_name;
-
-        if(isset($post['ref_phone_number'][$rkey])):
-            $rdata['ref_phone_number'] = $post['ref_phone_number'][$rkey];
-        endif;
-        if(isset($post['ref_email'][$rkey])):
-            $rdata['ref_email'] = $post['ref_email'][$rkey];
-        endif;
-
-        $rdata['author'] = $user_id;
-        $rdata['contractors'] = $id;
-        $rfid = $pod_ri->add($rdata);
-        error_log('RF LOG:'.print_r($rfid, true));
-        $ref_id[] = $rfid;
-    endforeach;
-
-    if(!empty($ref_id)):
-        $pod->save( 'business_referrals', $ref_id, $id );
-    endif;
-
-    $u = new WP_User( $user_id );
-    $u->set_role( 'contractor' );
-
-
-    $mail = new RhMail();
-    $link = site_url("/dashboard/")."?menu_type=user&menu_slug=all_contractors&&fed_nonce=". wp_create_nonce( 'fed_nonce' )."display=view&rid=".encrypt_decrypt('encrypt',$id);
-    $admin_email = get_option( 'admin_email' );
-    $email_body = $mail->new_contractor_admin_email($post['name'], $link, $id);
-    $subject = "RoofHub: New Contractor Request Details";
-    $send_result = $mail->send_general_email( $email_body,  $admin_email, $subject );
-
-    echo "Successfully send!";die;
-}
 
 
 function ip_info($ip = NULL, $purpose = "location", $deep_detect = TRUE) {
@@ -640,232 +380,7 @@ function get_client_ip() {
     return $ipaddress;
 }
 
-
-
-function get_sponsor_adinfo()
-{
-    global $wpdb;
-    $data = [];
-    $userinfo = wp_get_current_user();
-    $where = 'author.ID = "' . $userinfo->ID . '" AND';
-    if(is_super_admin()):
-        $where = '';
-    endif;
-    $params = array(
-        'where' => ' '.$where.' t.is_delete = 0 ',
-        'limit' => -1  // Return all rows
-    );
-
-
-    $advs = pods('advertisement', $params);
-    $data['total_adv'] = $advs->total();
-    $data['advs'] = $advs;
-
-    $data['premium'] = 0;
-    $data['sponsor'] = 0;
-    /*$data['active'] = 0;
-    $data['inactive'] = 0;*/
-
-    $data['popup'] = false;
-
-    $all_rows = $advs->data();
-
-    $exist_data = $wpdb->get_row( "SELECT SUM(`used_card`) as used, SUM(`no_card`) as nocard FROM `wp_sponsor_member` WHERE user_id = '{$userinfo->ID}'" );
-
-    if($exist_data && $exist_data->nocard):
-        if($exist_data->nocard > $exist_data->used):
-            $data['can_add'] = true;
-        else:
-            $data['can_add'] = false;
-        endif;
-    else:
-        $data['can_add'] = false;
-        $data['popup'] = true;
-    endif;
-
-    if (!empty($all_rows)) {
-        foreach ($all_rows as $adv) {
-            if($adv->is_premium){
-                $data['premium'] = $data['premium']+1;
-            } else {
-                $data['sponsor'] = $data['sponsor']+1;
-            }
-
-           /* if($adv->status){
-                $data['active'] = $data['active']+1;
-            } else {
-                $data['inactive'] = $data['inactive']+1;
-            }*/
-        }
-    }
-
-    $exist_data = $wpdb->get_row( "SELECT `type` FROM `wp_sponsor_member` WHERE user_id = '{$userinfo->ID}'  ORDER BY `date` DESC LIMIT 1" );
-    $data['type'] = $exist_data && $exist_data->type?$exist_data->type:false;
-
-
-    return $data;
-}
-
-
-function get_payments_info(){
-    $data = [];
-    $userinfo = wp_get_current_user();
-    $where = 'author.ID = "' . $userinfo->ID . '" AND';
-    if(is_super_admin()):
-        $where = '';
-    endif;
-    $params = array(
-        'where' => ' '.$where.' 1 = 1 ',
-        'limit' => -1  // Return all rows
-    );
-
-
-    $advs = pods('payment', $params);
-
-    $data['payment'] = $advs;
-
-    return $data;
-}
-
 function no_image_url(){
     return plugins_url('/_inc/images/noimage.png', BC_FED_PLUGIN );
 }
 
-
-
-function get_sponsor_user_type(){
-    $current_user_id = get_current_user_id();
-
-    $type = get_user_meta($current_user_id,'sponsor_type', true);
-
-    return $type;
-}
-
-/**
- *
- */
-function get_sponsor_existing_cards_package(){
-    global $wpdb;
-    $userinfo = wp_get_current_user();
-    $results = $wpdb->get_results("SELECT * FROM `wp_sponsor_member` WHERE no_card > used_card AND user_id = $userinfo->ID");
-    $data = [];
-    foreach ($results as $key => $result):
-        $people = pods( 'adv_package', $result->ad_id );
-        $adv = $people->row();
-        $result->adinfo = $adv;
-        $data[] = $result;
-    endforeach;
-
-    return $data;
-}
-
-
-function get_users_by_state_city($state = false, $city = false){
-    global $wpdb;
-
-    if($state):
-        $state = array(
-            'key'     => 'state',
-            'value'   => $state,
-            'compare' => '='
-        );
-    else:
-        $state = array(
-            'key'     => 'state',
-            'value'   => '',
-            'compare' => '!='
-        );
-    endif;
-
-    if($city):
-        $city = array(
-            'key'     => 'city',
-            'value'   => $city,
-            'compare' => '='
-        );
-    else:
-        $city = array(
-            'key'     => 'city',
-            'value'   => '',
-            'compare' => '!='
-        );
-    endif;
-
-    $args = array(
-        'role' => 'contractor',
-        'meta_query' => array(
-            'relation' => 'OR',
-            array(
-                'key'     => 'state',
-                'value'   => false,
-                'compare' => '='
-            ),
-            array(
-                'key'     => 'city',
-                'value'   => '',
-                'compare' => '!='
-            )
-        )
-    );
-    $user_query = new WP_User_Query( $args );
-
-    $data = [];
-    if ( ! empty( $user_query->get_results() ) ) {
-        $com = [];
-        foreach ( $user_query->get_results() as $user ) {
-            $data[$user->ID] = get_user_meta($user->ID, 'first_name', true). " ".get_user_meta($user->ID, 'last_name', true);
-        }
-
-    }
-
-    return $data;
-}
-
-
-function get_featured_contractors($state = false){
-    $where = ' 1=1  AND (t.featured_contractor = 1 OR t.premium_contractor = 1) ';
-
-    if($state):
-        $where .= ' AND t.state = "'.$state.'" ';
-    endif;
-    $params = array(
-            'where' => $where,
-            'limit'   => -1  // Return all rows
-    );
-
-    $contractors = pods( 'contractor', $params );
-    $cons = [];
-
-    if ( 0 < $contractors->total() ):
-        $i = 1;
-        while ( $contractors->fetch() ):
-            $cons[] = $contractors->display('id');
-        endwhile;
-   endif;
-
-   return $cons;
-}
-
-function get_all_contractors($state = false){
-    $where = ' 1=1  AND (t.featured_contractor = 0) ';
-
-    if($state):
-        $where .= ' AND t.state = "'.$state.'" ';
-    endif;
-    $params = array(
-        'where' => $where,
-        'limit'   => -1  // Return all rows
-    );
-
-    $contractors = pods( 'contractor', $params );
-    $cons = [];
-
-    if ( 0 < $contractors->total() ):
-        $i = 1;
-        while ( $contractors->fetch() ):
-            $cons[] = $contractors->display('id');
-        endwhile;
-    endif;
-
-    return $cons;
-}

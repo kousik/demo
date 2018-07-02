@@ -1,6 +1,0 @@
-[10-Apr-2018 12:47:35 CST6CDT] PHP Fatal error:  Call to undefined function the_ID() in /home/roofhubcom/public_html/wp-content/themes/twentyfifteen/content-link.php on line 13
-[11-Apr-2018 04:33:38 CST6CDT] PHP Fatal error:  Call to undefined function the_ID() in /home/roofhubcom/public_html/wp-content/themes/twentyfifteen/content.php on line 13
-[11-Apr-2018 05:47:27 CST6CDT] PHP Fatal error:  Call to undefined function get_header() in /home/roofhubcom/public_html/wp-content/themes/twentyfifteen/index.php on line 17
-[11-Apr-2018 14:39:40 CST6CDT] PHP Fatal error:  Call to undefined function get_header() in /home/roofhubcom/public_html/wp-content/themes/twentyfifteen/404.php on line 10
-[11-Apr-2018 23:42:15 CST6CDT] PHP Fatal error:  Call to undefined function _e() in /home/roofhubcom/public_html/wp-content/themes/twentyfifteen/author-bio.php on line 12
-[12-Apr-2018 01:05:15 CST6CDT] PHP Fatal error:  Call to undefined function get_header() in /home/roofhubcom/public_html/wp-content/themes/twentyfifteen/archive.php on line 19

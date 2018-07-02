@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: RoofHub Frontend Dashboard
+ * Plugin Name: SpecsMind Frontend Dashboard
  * Description: Front end dashboard provide high flexible way to customize the user dashboard on front end rather than WordPress wp-admin dashboard.
  * Version: 5.2.13
  * Author: Kousik
@@ -56,7 +56,10 @@ define( 'BC_FED_POST_DB', 'fed_post' );
  * Plugin URL
  */
 define( 'BC_FED_API_PLUGIN_LIST', 'https://buffercode/api/v1/fed/plugin_list' );
-require_once BC_FED_PLUGIN_DIR.'/include/cron.php';
+
+
+
+
 require_once BC_FED_PLUGIN_DIR.'/functions/data.php';
 require_once BC_FED_PLUGIN_DIR.'/functions/extensions/uri/functions.php';
 require_once BC_FED_PLUGIN_DIR.'/templates/functions.php';
@@ -67,8 +70,11 @@ require_once BC_FED_PLUGIN_DIR . '/include/functions.php';
 require_once BC_FED_PLUGIN_DIR . '/include/mail.php';
 require_once BC_FED_PLUGIN_DIR . '/include/ajax-functions.php';
 require_once BC_FED_PLUGIN_DIR . '/include/theme-functions.php';
+require_once BC_FED_PLUGIN_DIR . '/include/api.php';
+require_once BC_FED_PLUGIN_DIR . '/include/api-functions.php';
 
-
+register_activation_hook( __FILE__, 'isms_add_custom_roles_to_all_sites' );
+register_deactivation_hook( __FILE__, 'isms_remove_custom_roles_from_all_sites' );
 
 /*tables that need to be created for each site*/
 add_action( "init", "tls_database_table_creation", 1 );

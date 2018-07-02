@@ -165,8 +165,8 @@ function epic_community_scripts(){
     wp_enqueue_style('font-awesome');
 
 
-    wp_enqueue_style( 'epic-community-css', plugins_url('/_inc/css/community.css', BC_FED_PLUGIN ), 'all' );
-    wp_enqueue_style( 'chosen-css', plugins_url('/_inc/tparty/chosen/chosen.css', BC_FED_PLUGIN ), 'all' );
+    wp_enqueue_style( 'epic-community-css', plugins_url('/_inc/css/community.css', BC_FED_PLUGIN ), all );
+    wp_enqueue_style( 'chosen-css', plugins_url('/_inc/tparty/chosen/chosen.css', BC_FED_PLUGIN ), all );
     //wp_enqueue_style( 'modal-css', plugins_url('/_inc/tparty/modal/jquery.modal.css', BC_FED_PLUGIN ), all );
 
 
@@ -195,7 +195,7 @@ add_action('init', 'fdb_community_init', 1);
 function fdb_community_init(){
     if(!isset($_COOKIE['state'])):
         $state = ip_info("Visitor", "State");
-        $states = fdb_get_state($country_code = 231);
+        $states = fdb_get_state($country_code = 101);
         $statArray = [];
         foreach($states as $key => $s):
             $statArray[] = $s->name;
@@ -207,13 +207,3 @@ function fdb_community_init(){
 
     endif;
 }
-
-
-/*Schedules a quarter-hour event upon plugin activation*/
-
-function fbd_custom_cron_job() {
-        if ( ! wp_next_scheduled( 'fbd_assign_contractors' ) ):
-            wp_schedule_event(time(), 'hourly', 'fbd_assign_contractors');
-        endif;
-}
-add_action( 'init', 'fbd_custom_cron_job', 2 );
