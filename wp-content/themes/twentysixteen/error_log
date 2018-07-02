@@ -1,0 +1,1 @@
+[11-Apr-2018 11:41:35 CST6CDT] PHP Fatal error:  Call to undefined function get_header() in /home/roofhubcom/public_html/wp-content/themes/twentysixteen/404.php on line 10
