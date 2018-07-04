@@ -74,11 +74,10 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
             if(array_key_exists('agent', $user_info->wp_capabilities)):
                 $role = 'agent';
                 $udata['role'] = $role;
-                $udata['role'] = get_user_meta($user->ID, 'target_lead', true)?get_user_meta($user->ID, 'target_lead', true):0;
                 $udata['target_lead'] = get_user_meta($user->ID, 'target_lead', true)?get_user_meta($user->ID, 'target_lead', true):0;
                 $udata['reg_lead'] = get_user_meta($user->ID, 'reg_lead', true)?get_user_meta($user->ID, 'reg_lead', true):0;
-                $udata['role'] = get_user_meta($user->ID, 'target_start', true)?get_user_meta($user->ID, 'target_start', true):0;
-                $udata['role'] = get_user_meta($user->ID, 'target_end', true)?get_user_meta($user->ID, 'target_end', true):0;
+                $udata['target_start'] = get_user_meta($user->ID, 'target_start', true)?get_user_meta($user->ID, 'target_start', true):false;
+                $udata['target_end'] = get_user_meta($user->ID, 'target_end', true)?get_user_meta($user->ID, 'target_end', true):false;
             endif;
             if(array_key_exists('distributor', $user_info->wp_capabilities)):
                 $role = 'distributor';
