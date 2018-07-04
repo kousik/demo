@@ -54,7 +54,7 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
                         return [ 'status' => -1, 'error' => 'Invalid Password!' ];
                     endif;
 
-                    $udata = get_user_data_id($user->ID);
+                    $udata = $this->get_user_data_id($user->ID);
 
                     return [ 'status' => 0, 'data' => $udata, 'userdata' => $user, 'msg' => "Successfully logged in!" ];
                 else:
