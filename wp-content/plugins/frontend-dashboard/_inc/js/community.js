@@ -184,6 +184,11 @@ jq(document).ready(function () {
         return true;
     });
 
+    /*jq('#agentForm').on('shown.bs.modal', function (event) {
+        jq(".js-profile-state").chosen();
+        jq(".js-profile-city").chosen();
+    });*/
+
 
 
 });

@@ -192,6 +192,7 @@ p.box, div.box {margin:1em 0 1.5em 0; padding:9px 10px 9px 50px; border-width:1p
     margin-top: 15px !important;
 }
 
+/*
 header.site-header{background-color: #000;z-index: 1 !important;}
 .genesis-nav-menu a, .sign-up-menu a { color: #FFFFFF;}
 .genesis-nav-menu .sub-menu {
@@ -217,4 +218,22 @@ header.site-header{background-color: #000;z-index: 1 !important;}
 }
 .sign-up-menu {
     margin-top: 33px;
+}
+*/
+
+.fed_dashboard_container{
+    padding-top: 5%;
+    padding-bottom: 20%;
+}
+
+#main-header {
+    z-index: 5 !important;
+}
+
+#agentForm div.chosen-container{
+    width: 100% !important;
+}
+
+#distForm div.chosen-container{
+    width: 100% !important;
 }

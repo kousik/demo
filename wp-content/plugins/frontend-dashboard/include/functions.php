@@ -89,7 +89,7 @@ function fdb_get_state($country_code = 101){
 function fdb_get_city($state_name = false){
     global $wpdb;
     global $wpdb;
-    $state_id = $total = $wpdb->get_var("SELECT id FROM `wp_states` WHERE `country_id` = 231 AND `name` = '{$city_name}'");
+    $state_id = $total = $wpdb->get_var("SELECT id FROM `wp_states` WHERE `country_id` = 231 AND `name` = '{$state_name}'");
     $cities = $wpdb->get_results("SELECT * FROM `wp_cities` WHERE `state_id` = {$state_id}");
     return $cities;
 }
@@ -163,6 +163,13 @@ function fed_menu_default_page_custom($rbval, $menus, $index){
         return false;
     }
 
+    if($index == 'agents'){
+        return false;
+    }
+
+    if($index == 'distributors'){
+        return false;
+    }
 
     return $rbval;
 }
@@ -180,6 +187,18 @@ function fed_frontend_dashboard_menu_container_fn( $menu_items, $index) {
         $template = epic_community_template('settings', '/dashboard/');
         load_template( $template );
     }
+
+    if ( isset($menu_items[$index]['menu_slug']) && $menu_items[$index]['menu_slug'] === 'agents' ) {
+        $template = epic_community_template('tpl-agents', '/dashboard/');
+        load_template( $template );
+    }
+
+    if ( isset($menu_items[$index]['menu_slug']) && $menu_items[$index]['menu_slug'] === 'distributors' ) {
+        $template = epic_community_template('tpl-distributors', '/dashboard/');
+        load_template( $template );
+    }
+
+
 }
 
 
@@ -384,3 +403,73 @@ function no_image_url(){
     return plugins_url('/_inc/images/noimage.png', BC_FED_PLUGIN );
 }
 
+/**
+ * GEnerate random number
+ * @param Integer $len
+ * @return integer
+ */
+function isms_gen_id($len = 12,$name_cast = 'AG', $state = false){
+    global $blog_id;
+    $random = substr(number_format(time() * mt_rand(),0,'',''),0,$len);
+    $com_id = "{$name_cast}-{$state}-{$random}";
+    return $com_id;
+}
+
+
+function isms_get_users_by_role($role = "Agent"){
+    $user_query = new WP_User_Query( array( 'role' => $role ) );
+    if ( ! empty( $user_query->get_results() ) ):
+        return $user_query->get_results();
+    else:
+        return false;
+    endif;
+}
+
+
+function isms_get_total_agents_by_distributor($id){
+    $u = get_user_by('ID', $id);
+    $user_query = new WP_User_Query(
+            array(
+                'role' => 'Agent' ,
+                'meta_query' => array(
+                    'relation' => 'AND',
+                    array(
+                        'key'     => 'dist_id',
+                        'value'   => $u->user_login,
+                        'compare' => '='
+                    )
+                )
+            )
+    );
+
+    return $user_query->get_total();
+}
+
+function isms_get_total_leads_by_agents_single_distributor($id){
+    $u = get_user_by('ID', $id);
+    $user_query = new WP_User_Query(
+        array(
+            'role' => 'Agent' ,
+            'meta_query' => array(
+                'relation' => 'AND',
+                array(
+                    'key'     => 'dist_id',
+                    'value'   => $u->user_login,
+                    'compare' => '='
+                )
+            )
+        )
+    );
+
+    if ( ! empty( $user_query->get_results() ) ):
+        $cnt = 0;
+        foreach ($user_query->get_results() as $usr):
+            $total = get_user_meta($usr->ID, 'reg_lead', true)?get_user_meta($usr->ID, 'reg_lead', true):0;
+            $cnt = $cnt+$total;
+        endforeach;
+
+        return $cnt;
+    else:
+        return 0;
+    endif;
+}
