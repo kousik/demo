@@ -89,7 +89,7 @@ function fdb_get_state($country_code = 101){
 function fdb_get_city($state_name = false){
     global $wpdb;
     global $wpdb;
-    $state_id = $total = $wpdb->get_var("SELECT id FROM `wp_states` WHERE `country_id` = 231 AND `name` = '{$state_name}'");
+    $state_id = $total = $wpdb->get_var("SELECT id FROM `wp_states` WHERE `country_id` = 101 AND `name` = '{$state_name}'");
     $cities = $wpdb->get_results("SELECT * FROM `wp_cities` WHERE `state_id` = {$state_id}");
     return $cities;
 }
