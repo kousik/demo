@@ -111,9 +111,7 @@
                     <div class="form-group" style="display: none;">
                         <label for="city" class="control-label"> City </label>
                             <select data-placeholder="Choose a City..." class="chosen-select js-profile-city" name="city" tabindex="2">
-                                <?php foreach (fdb_get_city($raw_data->state) as $ckey => $cobj):?>
-                                    <option value="<?=$cobj->name?>" data-id="<?=$cobj->id?>" <?=$raw_data->city == $cobj->name?"selected":""?>><?=$cobj->name?></option>
-                                <?php endforeach;?>
+
                             </select>
                     </div>
 
