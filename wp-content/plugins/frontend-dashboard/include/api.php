@@ -145,9 +145,9 @@ class Isms_API_Controller extends WP_REST_Controller
      * @return WP_Error|bool
      */
     public function get_items_permissions_check( $request ) {
-        if(!is_user_logged_in()):
-            return [ 'status' => '-2', 'message' => 'Authentication required!' ];
-        endif;
+        //if(!is_user_logged_in()):
+            //return [ 'status' => '-2', 'message' => 'Authentication required!' ];
+        //endif;
         return true;
     }
 }
