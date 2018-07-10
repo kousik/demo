@@ -1,6 +1,6 @@
 <?php
 // Hook our class to the REST API.
-add_action( 'rest_api_init', 'isms_register_rest_routes', 20 );
+add_action( 'rest_api_init', 'isms_register_rest_routes', 100 );
 /**
  * Register our routes with the REST API.
  *
@@ -42,6 +42,17 @@ class Isms_API_Controller extends WP_REST_Controller
                 'permission_callback' => array($this, 'get_items_permissions_check'),
             )
         ));
+
+        register_rest_route( $this->base, '/app/user/(?P<id>[a-zA-Z0-9-]+)', array(
+            array(
+                'methods' => 'GET',
+                'callback' => array( $this, 'ismas_get_userinfo' ),
+                'args' => [
+                    'id'
+                ],
+            )
+        ));
+
 
         /*register_rest_route($this->base, '/app/signin', array(
             array(
@@ -90,12 +101,23 @@ class Isms_API_Controller extends WP_REST_Controller
     }
 
     /**
-     * E-Link API Endpoints
+     * ISMS API Endpoints
      */
     public function ismas_app_signup($request){
         if ( class_exists( 'ismsMobAPI' ) ) :
             $myApi = new ismsMobAPI();
             return $myApi->ismas_app_signup($request->get_json_params());
+        endif;
+        return array(
+            "status"  => - 1,
+            "message" => "No route was found matching the URL and request method"
+        );
+    }
+
+    public function ismas_get_userinfo($request){
+        if ( class_exists( 'ismsMobAPI' ) ) :
+            $myApi = new ismsMobAPI();
+            return $myApi->ismas_get_userinfo($request['id']);
         endif;
         return array(
             "status"  => - 1,

@@ -66,6 +66,32 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
         }
 
 
+        public function ismas_get_userinfo($user_login){
+            global $epic, $blog_id, $wpdb;
+
+            $user_login = epic_data_escape($user_login);
+            $user_password = epic_data_escape($user_login);
+            $user_email = epic_data_escape($user_login);
+
+
+            if (username_exists($user_login) || email_exists($user_email)):
+
+                $user_data = get_user_by('login', $user_login);
+
+                if (!$user_data):
+                    $user_data = get_user_by('email', $user_email);
+                endif;
+                $udata = $this->get_user_data_id($user_data->ID);
+
+                return [ 'status' => 0, 'data' => $udata ];
+            else:
+                return [ 'status' => -1, 'error' => 'User ID is incorrect. Please verify & try again.' ];
+
+            endif;
+        }
+
+
+
         public function get_user_data_id($user_id){
             $user_info = get_userdata($user_id);
             $user = $user_info;
