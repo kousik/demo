@@ -4,6 +4,19 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
 
     class ismsMobAPI {
 
+        var $api_url;
+        var $api_key = "9cc74e44-ec29-11e6-8c71-00163ef91450";
+
+
+        /**
+         * Class construct function
+         **/
+        function __construct(){
+            global $epic;
+
+            $this->api_url = "http://2factor.in/API/V1/".$this->api_key."/";
+            $this->otp_tpl = "GLOBALOTP";
+        }
         /**
          * @param $data
          * @return array
@@ -130,6 +143,128 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
 
             return $udata;
         }
+
+
+        public function ismas_send_otp($phone_number){
+            $mob_verify = $this->sendOtp($phone_number);
+            if(isset($mob_verify['error'])):
+                return [ 'status' => -1, 'error' => $mob_verify['error'] ];
+            else:
+                return [ 'status' => 0, 'data' => json_decode($mob_verify['response']) ];
+            endif;
+        }
+
+
+        public function ismas_verify_otp($data){
+            $verify_id = $data['verify_id'];
+            $input_otp = $data['otp'];
+
+            $mob_verify = $this->verifyOtp($verify_id, $input_otp);
+            if(isset($mob_verify['error'])):
+                return [ 'status' => -1, 'error' => $mob_verify['error'] ];
+            else:
+                return [ 'status' => 0, 'data' => json_decode($mob_verify['response']) ];
+            endif;
+        }
+
+
+        /**
+         * @param $phone_number
+         * @return mixed|string
+         */
+        public function sendOtp($phone_number){
+            $url = $this->api_url.'SMS/'.$phone_number.'/AUTOGEN/'.$this->otp_tpl;
+            //error_log('infodata: '.$url);
+            $data = $this->myCurl($url);
+            //error_log('data: '.print_r($data,true));
+            return $data;
+        }
+
+        /**
+         * @param $verify_id
+         * @param $input_otp
+         * @return mixed|string
+         */
+        public function verifyOtp($verify_id, $input_otp){
+            $url = $this->api_url.'SMS/VERIFY/'.$verify_id.'/'.$input_otp;
+            $data = $this->myCurl($url);
+            return $data;
+        }
+
+
+        /**
+         * @param $url
+         * @param array $params
+         * @return mixed|string
+         */
+        private function myCurl($url, $params=[]){
+            $data = [];
+            $curl = curl_init();
+
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => "",
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => "GET",
+                CURLOPT_POSTFIELDS => "{}",
+            ));
+
+            $response = curl_exec($curl);
+            $err = curl_error($curl);
+
+            curl_close($curl);
+            //error_log('err: '.$err);
+            //error_log('response: '.$response);
+            if ($err) :
+                $data['error'] = $err;
+            else :
+                $data['response'] = $response;
+            endif;
+            return $data;
+        }
+
+        /**
+         * @param $url
+         * @param array $params
+         * @return mixed|string
+         */
+        private function myPostCurl($url, $params){
+            $data = [];
+            $curl = curl_init();
+            /*foreach($params as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
+
+            rtrim($fields_string, '&');*/
+
+            $data_string = json_encode($params);
+
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POST => count($params),
+                CURLOPT_POSTFIELDS => $data_string,
+                CURLOPT_HTTPHEADER => array(
+                    'Content-Type: application/json',
+                    'Content-Length: ' . strlen($data_string))
+            ));
+
+            $response = curl_exec($curl);
+            $err = curl_error($curl);
+
+            curl_close($curl);
+            //error_log('err: '.$err);
+            //error_log('response: '.$response);
+            if ($err) :
+                $data['error'] = $err;
+            else :
+                $data['response'] = $response;
+            endif;
+            return $data;
+        }
+
 
 
     }
