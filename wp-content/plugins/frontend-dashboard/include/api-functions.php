@@ -148,7 +148,7 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
         public function ismas_send_otp($phone_number){
             $mob_verify = $this->sendOtp($phone_number);
             if(isset($mob_verify['error'])):
-                return [ 'status' => -1, 'error' => $mob_verify['error'] ];
+                return [ 'status' => -1, 'error' => json_decode($mob_verify['error']) ];
             else:
                 return [ 'status' => 0, 'data' => json_decode($mob_verify['response']) ];
             endif;
@@ -161,7 +161,7 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
 
             $mob_verify = $this->verifyOtp($verify_id, $input_otp);
             if(isset($mob_verify['error'])):
-                return [ 'status' => -1, 'error' => $mob_verify['error'] ];
+                return [ 'status' => -1, 'error' => json_decode($mob_verify['error']) ];
             else:
                 return [ 'status' => 0, 'data' => json_decode($mob_verify['response']) ];
             endif;
