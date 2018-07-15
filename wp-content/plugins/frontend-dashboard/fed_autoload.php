@@ -142,6 +142,9 @@ function epic_community_scripts(){
     /*JAVASCRIPT*/
     //wp_enqueue_script( 'recurly', 'https://js.recurly.com/v4/recurly.js', array( 'jquery' ) );
     wp_enqueue_script( 'community-form', plugins_url('/_inc/tparty/forms/jquery.form.js', BC_FED_PLUGIN ), array( 'jquery' ), BC_FED_PLUGIN_VERSION, false );
+    wp_enqueue_script( 'datatable-js', plugins_url('/_inc/tparty/DataTables/datatables.min.js', BC_FED_PLUGIN ), array( 'jquery' ), BC_FED_PLUGIN_VERSION, false );
+
+
     wp_enqueue_script( 'epic-community-js', plugins_url('/_inc/js/community.js', BC_FED_PLUGIN ), array( 'jquery' ), BC_FED_PLUGIN_VERSION, true );
 
     wp_enqueue_script( 'easing-js', plugins_url('/_inc/js/jquery.easing.min.js', BC_FED_PLUGIN ), array( 'jquery' ), BC_FED_PLUGIN_VERSION, false );
@@ -168,6 +171,7 @@ function epic_community_scripts(){
     wp_enqueue_style( 'epic-community-css', plugins_url('/_inc/css/community.css', BC_FED_PLUGIN ), all );
     wp_enqueue_style( 'chosen-css', plugins_url('/_inc/tparty/chosen/chosen.css', BC_FED_PLUGIN ), all );
     //wp_enqueue_style( 'modal-css', plugins_url('/_inc/tparty/modal/jquery.modal.css', BC_FED_PLUGIN ), all );
+    wp_enqueue_style( 'modal-css', plugins_url('/_inc/tparty/DataTables/datatables.css', BC_FED_PLUGIN ), all );
 
 
 
@@ -207,3 +211,21 @@ function fdb_community_init(){
 
     endif;
 }
+
+function kv_date_time_js() {
+    //jQuery UI date picker file
+    wp_enqueue_script('jquery-ui-datepicker');
+    //wp_enqueue_script('jquery-ui-script', 'http://code.jquery.com/ui/1.11.0/jquery-ui.min.js', array('jquery' ), BC_FED_PLUGIN_VERSION, false);
+    wp_enqueue_script('jquery-ui-core');
+//jQuery UI theme css file
+    wp_enqueue_style('e2b-admin-ui-css','http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/themes/base/jquery-ui.css',false,"1.9.0",false);
+
+    wp_register_style('kv_js_time_style' , plugins_url('_inc/tparty/datetime/jquery-ui-timepicker-addon.css', BC_FED_PLUGIN ));
+    wp_enqueue_style('kv_js_time_style');
+   // wp_enqueue_style('jquery-style', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css');
+    //wp_enqueue_script('jquery-script', 'http://code.jquery.com/ui/1.10.4/jquery-ui.js');
+
+    wp_enqueue_script('jquery-time-picker' ,  plugins_url('_inc/tparty/datetime/jquery-ui-timepicker-addon.js', BC_FED_PLUGIN ),  array('jquery' ), BC_FED_PLUGIN_VERSION, true);
+
+}
+add_action('wp_enqueue_scripts', 'kv_date_time_js', 9);

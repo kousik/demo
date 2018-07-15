@@ -65,10 +65,13 @@ var Base64={_keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456
 
 
 jq(document).ready(function () {
-
+    jq('.date_time_picker').datetimepicker({
+        dateFormat: 'yy-mm-dd',
+        timeFormat: 'HH:mm:ss'
+    });
 
     jq("body").delegate("form#etf-hub-form input[name='etf-hub-form-submit'], form#etf-hub-form button[name='etf-hub-form-submit']", "click", function (e) {
-
+        e.preventDefault();
         // submit the form 
         var form = jq(this);
         do {
@@ -83,8 +86,8 @@ jq(document).ready(function () {
 
 
 
-    jq("form#etf-hub-form button[name='rf-form-submit'], form#etf-hub-form-rf button[name='rf-form-submit']").click(function(e){
-
+    jq("form[name='etf-community-form'] button[name='etf-hub-form-submit'], form[name='etf-community-form'] input[name='etf-hub-form-submit']").click(function(e){
+        e.preventDefault();
         // submit the form
         var form = jq(this);
         do {
@@ -95,6 +98,15 @@ jq(document).ready(function () {
 
         // return false to prevent normal browser submit and page navigation
         return false;
+    });
+
+    jq(".js-chosen").chosen();
+    jq(".js-url-state").chosen();
+    jq(".js-url-state").change(function(){
+        var state = jq(this).val();
+        var url = jq(this).attr('data-url');
+        window.location.href = url+'?state='+state;
+        return true;
     });
 
     jq(".js-profile-state").chosen();
@@ -110,7 +122,6 @@ jq(document).ready(function () {
             jq(".js-profile-city").trigger("chosen:updated");
         }, "html");
     });
-
 
 
     //Roofing
@@ -131,7 +142,6 @@ jq(document).ready(function () {
             jq(".js-city").trigger("chosen:updated");
         }, "html");
     });
-
 
 
     jq(".js-c-state").chosen();
@@ -155,6 +165,7 @@ jq(document).ready(function () {
         }, "html");
     });
 
+
     jq("body").delegate("input[name='email_address']", "keyup", function (e) {
         var confemail = jq(this).val();
         jq.post(etajaxurl, {
@@ -175,21 +186,124 @@ jq(document).ready(function () {
 
 
 
+    //For tables
 
-    jq(".js-url-state").chosen();
-    jq(".js-url-state").change(function(){
-        var state = jq(this).val();
-        var url = jq(this).attr('data-url');
-        window.location.href = url+'?state='+state;
-        return true;
+    jq('#agent_table').DataTable({
+        "bProcessing": true,
+        "serverSide": true,
+        "pageLength": 50,
+        "ajax":{
+            url :etajaxurl, // json datasource
+            type: "post",  // type of method  ,GET/POST/DELETE
+            data: {
+                "fed_ajax_hook": "get_all_agents"
+            },
+            error: function(){
+                jq("#agent_table_processing").css("display","none");
+            }
+        },
+        "columns": [
+            {
+                "data": "row_id"
+            },
+            {
+                "data": "user_login"
+            },
+            {
+                "data": "pwd"
+            },
+            {
+                "data": "first_name"
+            },
+            {
+                "data": "dist_id"
+            },
+            {
+                "data": "target_lead"
+            },
+            {
+                "data": "reg_lead"
+            },
+            {
+                "data": "target_start"
+            },
+            {
+                "data": "target_end"
+            },
+            {
+                "data": "user_status"
+            },
+            {
+                "data": "actions"
+            }
+
+        ],
+        "order": [[0, 'asc']],
+        "aoColumnDefs" : [
+            {
+                'bSortable' : false,
+                'aTargets' : [ 0, 2,3,4,5,6,7,8,10 ]
+            }],
+
+        "initComplete": function () {
+            this.api().columns().every(function () {
+                var column = this;
+
+                if (column.index() == 10) {
+                    var select = jq('<select><option value="" selected>Select Status</option></select>')
+                        .appendTo(jq("#filters").find("th").eq(column.index()))
+                        .on('change', function () {
+                            var val = jq.fn.dataTable.util.escapeRegex($(this).val());
+
+                            column.search(val, true, false).draw();
+                        });
+
+                    select.append('<option value="1">Active</option>');
+                    select.append('<option value="2">Deactive</option>');
+                }
+
+                jQuery('[data-toggle="popover"]').popover();
+            });
+
+        }
+
+
     });
 
-    /*jq('#agentForm').on('shown.bs.modal', function (event) {
-        jq(".js-profile-state").chosen();
-        jq(".js-profile-city").chosen();
-    });*/
 
-
+    //User Delete
+    jq("body").delegate(".js-request-delete", "click", function (e) {
+        e.preventDefault();
+        if( confirm("Are you sure you want to delete this user?") ) {
+            var id = jq(this).attr('data-req');
+            var redirect = jq(this).attr('data-redirect');
+            var url = jq(this).attr('data-url');
+            var $obj = jq(this);
+            jq.post(etajaxurl, {
+                id: id,
+                fed_ajax_hook: "delete_user"
+            }, function (data) {
+                if (data.delete) {
+                    if(redirect == "yes"){
+                        alert("User has been deleted successfully");
+                        window.location.href = url;
+                        return true;
+                    } else {
+                        jq("div.response").html(data.msg);
+                        jq("div.response").fadeIn(300, function () {
+                            setTimeout('jq("div.response").fadeOut(300)', 5000);
+                        });
+                        $obj.parent('td').parent('tr').hide();
+                    }
+                } else {
+                    jq("div.response").html(data.msg);
+                    jq("div.response").fadeIn(300, function () {
+                        setTimeout('jq("div.response").fadeOut(300)', 5000);
+                    });
+                }
+            }, "json");
+        }
+    });
 
 });
 
@@ -227,29 +341,6 @@ function etf_hub_form(obj){
             jq(form+" button[name='etf-community-post-submit']").attr('disabled', 'disabled');
             jq(form+' div.etf-community-module-loader').show();
 
-            if(form_val_class == "roofing") {
-
-                if (jq('input[name=best_time_contact]:checked').length <= 0) {
-                    jq("div.etf-community-ajax-feedback").html('<p class="box alert text-left">Select required fields!</p>');
-                    jq("div.etf-community-ajax-feedback").fadeIn(300, function () {
-                        setTimeout('jq("div.etf-community-ajax-feedback").fadeOut(300)', 5000);
-                    });
-                    jq(form+' div.etf-community-module-loader').hide();
-                    return false;
-                }
-
-            }
-
-            if(form_val_class == "contractor") {
-                if (jq('input[name=interested_in_advertising]:checked').length <= 0) {
-                    jq("div.etf-community-ajax-feedback").html('<p class="box alert text-left">Select required fields!</p>');
-                    jq("div.etf-community-ajax-feedback").fadeIn(300, function () {
-                        setTimeout('jq("div.etf-community-ajax-feedback").fadeOut(300)', 5000);
-                    });
-                    jq(form+' div.etf-community-module-loader').hide();
-                    return false;
-                }
-            }
         },
         success: function(data,s,x,f) {
             data = jq.trim(data);

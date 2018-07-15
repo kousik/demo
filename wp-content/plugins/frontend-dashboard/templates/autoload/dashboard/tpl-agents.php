@@ -1,139 +1,356 @@
-<div class="row">
-    <div class="col-md-12">
-        <div class="response" style="display: none;"></div>
-        <button  class="bth btn-sm btn-success pull-right" data-toggle="modal" data-target="#agentForm"><i class="fa fa-user-circle"></i> Add Agents</button>
+<?php
+$style = "";
+$view_style = 'style="display:none;"';
+if(isset($_GET['display']) && $_GET['display'] == 'agview'):
+    if(isset($_GET['rid']) && $_GET['rid']):
+        $style = 'style="display:none;"';
+        $view_style = "";
+    endif;
+endif;
+
+$edit_style = 'style="display:none;"';
+if (isset($_GET['display']) && $_GET['display'] == 'agedit'):
+    if (isset($_GET['rid']) && $_GET['rid']):
+        $style = 'style="display:none;"';
+        $edit_style = "";
+    endif;
+endif;
+
+?>
+<div class="agents-list" <?=$style?>>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="response" style="display: none;"></div>
+            <button  class="bth btn-sm btn-success pull-right" data-toggle="modal" data-target="#agentForm"><i class="fa fa-user-circle"></i> Add Agents</button>
+        </div>
     </div>
-</div>
-
-<div class="row">
-    <div class="col-md-12">
-        <div class="table-responsive js-table-content">
-            <table class="table table-hover"> <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Agent ID</th>
-                    <th>Password</th>
-                    <th>Name</th>
-                    <th>Assigned Distributor</th>
-                    <th>Targeted Leads</th>
-                    <th>Leads Done</th>
-                    <th>Target Start Date</th>
-                    <th>Target End Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php
-                if($users =isms_get_users_by_role($role = "Agent")):
-                    $i = 1;
-                    foreach ($users as $user):
-                ?>
-                        <tr class="row-<?=encrypt_decrypt('encrypt', $user->ID)?>">
-                            <td><?=$i?></td>
-                            <td><?=$user->user_login?></td>
-                            <td><?=encrypt_decrypt('decrypt', get_user_meta($user->ID, 'pwd', true))?></td>
-                            <td><?=get_user_meta($user->ID, 'first_name', true)?get_user_meta($user->ID, 'first_name', true):"--"?></td>
-                            <td><?php
-                                $dist_id = get_user_meta($user->ID, 'dist_id', true);
-                                if($dist_id):
-                                    $u = get_user_by('login', $dist_id);
-                                    echo get_user_meta($u->ID, 'first_name', true)?get_user_meta($u->ID, 'first_name', true)."<br>(ID: ".$u->user_login.")":"ID: ".$u->user_login;
-                                else:
-                                    echo "N/A";
-                                endif;
-                                ?></td>
-                            <td><?=get_user_meta($user->ID, 'target_lead', true)?get_user_meta($user->ID, 'target_lead', true):0?></td>
-                            <td><?=get_user_meta($user->ID, 'reg_lead', true)?get_user_meta($user->ID, 'reg_lead', true):0?></td>
-
-                            <td><?=get_user_meta($user->ID, 'target_start', true)?get_user_meta($user->ID, 'target_start', true):"--"?></td>
-                            <td><?=get_user_meta($user->ID, 'target_end', true)?get_user_meta($user->ID, 'target_end', true):"--"?></td>
-                            <td><?=$user->user_status == 1?'<span class="label label-danger">De-Active</span>':'<span class="label label-success">Active</span>'?></td>
-                            <td>
-                                <a class="btn btn-info btn-xs js-view-data" data-action="user_view" data-req="<?=encrypt_decrypt('encrypt',$user->ID)?>" href="javascript://" role="button" alt="View" title="View"><i class="fa fa-eye" aria-hidden="true"></i></a>
-                                <a class="btn btn-warning btn-xs js-edit-data" data-action="user_edit" data-req="<?=encrypt_decrypt('encrypt',$user->ID)?>" href="javascript://" role="button" alt="Edit" title="Edit"><i class="fa fa-edit" aria-hidden="true"></i></a>
-                                <a class="btn btn-danger btn-xs js-request-delete" href="javascript://" role="button" alt="Delete" data-req="<?=encrypt_decrypt('encrypt',$user->ID)?>" title="Delete"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
-                            </td>
-                        </tr>
-                <?php
-                        $i++;
-                    endforeach;
-                else:
-                ?>
-                    <tr>
-                        <th scope="row" colspan="10">Sorry! No data found!</th>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="table-responsive js-table-content">
+                <table class="table table-hover"  id="agent_table">
+                    <thead>
+                    <tr id="filters">
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
                     </tr>
+                    <tr>
+                        <th>#</th>
+                        <th>Agent ID</th>
+                        <th>Password</th>
+                        <th>Name</th>
+                        <th>Assigned Distributor</th>
+                        <th>Targeted Leads</th>
+                        <th>Leads Done</th>
+                        <th>Target Start Date</th>
+                        <th>Target End Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="agentForm" tabindex="-1" role="dialog" aria-labelledby="agentFormLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="exampleModalLabel">Add Bulk Agents</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="etf-hub-form"  action="<?php echo site_url( 'wp-load.php' );?>" method="post">
+                        <div class="form-group">
+                            <label for="recipient-name" class="control-label">Number of agents:</label>
+                            <input type="number" class="form-control" id="agent_number" name="agent_number" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="message-text" class="control-label">Number of Target Leads:</label>
+                            <input type="number" class="form-control" id="leads_number" name="leads_number" value="50">
+                        </div>
+
+
+                        <div class="form-group">
+                            <label for="state" class="control-label"> State </label>
+
+                                <select data-placeholder="Choose a State..." class="chosen-select js-profile-state" name="state" tabindex="2" style="width: 100% !important;" required>
+                                    <option value=""></option>
+                                    <?php foreach (fdb_get_state() as $skey => $sobj):?>
+                                        <option value="<?=$sobj->name?>" data-id="<?=$sobj->id?>" <?=$raw_data->state == $sobj->name?"selected":""?>><?=$sobj->name?></option>
+                                    <?php endforeach;?>
+                                </select>
+                        </div>
+
+                        <div class="form-group" style="display: none;">
+                            <label for="city" class="control-label"> City </label>
+                                <select data-placeholder="Choose a City..." class="chosen-select js-profile-city" name="city" tabindex="2">
+
+                                </select>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-warning pull-right" name="etf-hub-form-submit">Submit</button>
+                        </div>
+
+                        <div class="clear"></div>
+                        <input type="hidden" name="fed_ajax_hook" value="global_data_update" />
+                        <input type="hidden" name="type" value="agents">
+                        <?php
+                        $link = site_url("/dashboard/")."?menu_type=user&menu_slug=agents&fed_nonce=" . wp_create_nonce( 'fed_nonce' );
+                        ?>
+                        <input type="hidden" name="redirect" value="<?=$link?>">
+                        <?php wp_nonce_field('agent-nonce') ?>
+
+                        <div class="form-group">
+                            <div class="et-ajax-loader-global etf-community-module-loader"><span>Processing...</span></div>
+                            <div class="etf-community-ajax-feedback"></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="agent-view" <?=$view_style?>>
+    <?php
+    $uid = encrypt_decrypt('decrypt', $_GET['rid']);
+    $user = get_user_by('ID', $uid);
+    $edit_link = site_url("/dashboard/")."?menu_type=user&menu_slug=agents&&fed_nonce=". wp_create_nonce( 'fed_nonce' )."&display=agedit&rid=".encrypt_decrypt('encrypt',$user->ID);
+    ?>
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 col-xs-offset-0 col-sm-offset-0 col-md-offset-2 col-lg-offset-1 toppad" >
+
+
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><?=get_user_meta($uid, 'first_name', true)?></h3>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-3 col-lg-3 " align="center"> <img alt="User Pic" src="<?=no_image_url()?>" class="img-circle img-responsive"> </div>
+                        <div class=" col-md-9 col-lg-9 ">
+                            <table class="table table-user-information">
+                                <tbody>
+                                <tr>
+                                    <td>E-mail:</td>
+                                    <td><a href="mailto:<?=$user->user_email?>"><?=$user->user_email?></a></td>
+                                </tr>
+                                <tr>
+                                    <td>Assigned Distributor:</td>
+                                    <td><a href="javascript://"><?=get_user_meta($uid, 'dist_id', true)?></a></td>
+                                </tr>
+                                <tr>
+                                    <td>Targeted Leads</td>
+                                    <td><?=get_user_meta($uid, 'target_lead', true)?get_user_meta($uid, 'target_lead', true):0?></td>
+                                </tr>
+
+                                <tr>
+                                <tr>
+                                    <td>Targeted Starts</td>
+                                    <td><?=get_user_meta($uid, 'target_start', true)?date('d M, Y', strtotime(get_user_meta($uid, 'target_start', true)) ):"N/A"?></td>
+                                </tr>
+                                <tr>
+                                    <td>Targeted Ends</td>
+                                    <td><?=get_user_meta($uid, 'target_end', true)?date('d M, Y', strtotime(get_user_meta($uid, 'target_end', true)) ):"N/A"?></td>
+                                </tr>
+                                <tr>
+                                    <td>Address</td>
+                                    <td>
+                                        <address>
+                                        <?=get_user_meta($uid, 'address1', true)?get_user_meta($uid, 'address1', true).",<br>":""?>
+                                        <?=get_user_meta($uid, 'address2', true)?get_user_meta($uid, 'address2', true).",<br>":""?>
+                                        <?=get_user_meta($uid, 'state', true)?get_user_meta($uid, 'state', true).",<br>":""?>
+                                        <?=get_user_meta($uid, 'city', true)?get_user_meta($uid, 'city', true).", ":""?>
+                                        <?=get_user_meta($uid, 'pin', true)?" <strong>PIN :</strong>".get_user_meta($uid, 'pin', true):""?>
+                                        </address>
+                                    </td>
+                                </tr>
+
+                                <td>Phone Number</td>
+                                <td><?=get_user_meta($uid, 'mobile_number', true)?get_user_meta($uid, 'mobile_number', true):"N/A"?>
+                                </td>
+
+                                </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <a data-original-title="Broadcast Message" data-toggle="tooltip" type="button" class="btn btn-sm btn-primary"><i class="glyphicon glyphicon-envelope"></i></a>
+                    <span class="pull-right">
+                            <a href="<?=$edit_link?>" data-original-title="Edit this user" data-toggle="tooltip" type="button" class="btn btn-sm btn-warning"><i class="glyphicon glyphicon-edit"></i></a>
+                            <a data-original-title="Remove this user" data-toggle="tooltip" type="button" class="btn btn-sm btn-danger js-request-delete" data-redirect="yes" data-url="<?=site_url("/dashboard/")."?menu_type=user&menu_slug=agents&&fed_nonce=". wp_create_nonce( 'fed_nonce' )?>" data-req="<?=encrypt_decrypt('encrypt',$user->ID)?>"><i class="glyphicon glyphicon-remove"></i></a>
+                        </span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<div class="agents-edit" <?=$edit_style?>>
+    <?php
+    $uid = encrypt_decrypt('decrypt', $_GET['rid']);
+    $user = get_user_by('ID', $uid);
+    ?>
+    <h2>Edit: Agent : [ <?=$user->user_login?> ]</h2>
+    <form class="etf-hub-form-agent form-horizontal" id="etf-hub-form-agent" action="<?php echo site_url( 'wp-load.php' );?>" name="etf-community-form" enctype="multipart/form-data" method="post">
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">Name</label>
+            <div class="col-sm-5">
+                <input type="text" name="first_name" class="form-control" id="first_name" placeholder="Name" value="<?=get_user_meta($user->ID, 'first_name', true)?>">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">Email</label>
+            <div class="col-sm-5">
+                <input type="email" name="user_email" class="form-control" id="inputEmail3" placeholder="Email" value="<?=$user->user_email?>">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">Password</label>
+            <div class="col-sm-5">
                 <?php
-                endif;
+                $pwd = get_user_meta($user->ID, 'pwd', true)?encrypt_decrypt('decrypt', get_user_meta($user->ID, 'pwd', true)):"";
                 ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-
-<div class="js-content-body" style="display: none;">
-
-</div>
-
-
-<div class="modal fade" id="agentForm" tabindex="-1" role="dialog" aria-labelledby="agentFormLabel">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Add Bulk Agents</h4>
+                <input type="text" name="user_pass" class="form-control" id="inputPassword3" placeholder="Password" value="<?=$pwd?>">
             </div>
-            <div class="modal-body">
-                <form id="etf-hub-form"  action="<?php echo site_url( 'wp-load.php' );?>" method="post">
-                    <div class="form-group">
-                        <label for="recipient-name" class="control-label">Number of agents:</label>
-                        <input type="number" class="form-control" id="agent_number" name="agent_number" value="1">
-                    </div>
-                    <div class="form-group">
-                        <label for="message-text" class="control-label">Number of Target Leads:</label>
-                        <input type="number" class="form-control" id="leads_number" name="leads_number" value="50">
-                    </div>
-
-
-                    <div class="form-group">
-                        <label for="state" class="control-label"> State </label>
-
-                            <select data-placeholder="Choose a State..." class="chosen-select js-profile-state" name="state" tabindex="2" style="width: 100% !important;" required>
-                                <option value=""></option>
-                                <?php foreach (fdb_get_state() as $skey => $sobj):?>
-                                    <option value="<?=$sobj->name?>" data-id="<?=$sobj->id?>" <?=$raw_data->state == $sobj->name?"selected":""?>><?=$sobj->name?></option>
-                                <?php endforeach;?>
-                            </select>
-                    </div>
-
-                    <div class="form-group" style="display: none;">
-                        <label for="city" class="control-label"> City </label>
-                            <select data-placeholder="Choose a City..." class="chosen-select js-profile-city" name="city" tabindex="2">
-
-                            </select>
-                    </div>
-
-                    <div class="form-group">
-                        <button type="submit" class="btn btn-warning pull-right" name="etf-hub-form-submit">Submit</button>
-                    </div>
-
-                    <div class="clear"></div>
-                    <input type="hidden" name="fed_ajax_hook" value="global_data_update" />
-                    <input type="hidden" name="type" value="agents">
+        </div>
+        <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">Assigned Distributor</label>
+            <div class="col-sm-5">
+                <?php
+                $dist_id = get_user_meta($user->ID, 'dist_id', true);
+                ?>
+                <select data-placeholder="select a Distributor..." class="chosen-select js-chosen form-control" tabindex="2" name="dist_id">
+                    <option value=""></option>
                     <?php
-                    $link = site_url("/dashboard/")."?menu_type=user&menu_slug=agents&fed_nonce=" . wp_create_nonce( 'fed_nonce' );
+                    $dists = isms_get_users_by_role('distributor');
+                    if($dists):
+                        foreach ($dists as $dtbr):
+                            echo  '<option value="'.$dtbr->user_login.'" ' . selected($dist_id, $dtbr->user_login, false).'>'.$dtbr->user_login.'</option>';
+                        endforeach;
+                    endif;
                     ?>
-                    <input type="hidden" name="redirect" value="<?=$link?>">
-                    <?php wp_nonce_field('agent-nonce') ?>
-
-                    <div class="form-group">
-                        <div class="et-ajax-loader-global etf-community-module-loader"><span>Processing...</span></div>
-                        <div class="etf-community-ajax-feedback"></div>
-                    </div>
-                </form>
+                </select>
             </div>
         </div>
-    </div>
+
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">Targeted Leads</label>
+            <div class="col-sm-5">
+                <input type="text" name="target_lead" class="form-control" id="target_lead" placeholder="Targeted Leads" value="<?=get_user_meta($user->ID, 'target_lead', true)?>">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">Targeted Start</label>
+            <div class="col-sm-5">
+                <input type="text" name="target_start" class="form-control date_time_picker" id="target_start" placeholder="Targeted Start" value="<?=get_user_meta($user->ID, 'target_start', true)?>">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">Targeted Ends</label>
+            <div class="col-sm-5">
+                <input type="text" name="target_end" class="form-control date_time_picker" id="target_end" placeholder="Targeted Ends" value="<?=get_user_meta($user->ID, 'target_end', true)?>">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">Mobile Number</label>
+            <div class="col-sm-5">
+                <input type="text" name="mobile_number" class="form-control" id="mobile_number" placeholder="Mobile Number" value="<?=get_user_meta($user->ID, 'mobile_number', true)?>">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">Address 1</label>
+            <div class="col-sm-5">
+                <textarea  name="address1" class="form-control" id="address1" placeholder="Address 1"><?=get_user_meta($user->ID, 'address1', true)?></textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">Address 2</label>
+            <div class="col-sm-5">
+                <textarea  name="address2" class="form-control" id="address2" placeholder="Address 2"><?=get_user_meta($user->ID, 'address2', true)?></textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">State</label>
+            <div class="col-sm-5">
+                <?php
+                $state = get_user_meta($user->ID, 'state', true);
+                $city = get_user_meta($user->ID, 'city', true);
+                $cities = fdb_get_city($state);
+                ?>
+                <select data-placeholder="Choose a State..." class="chosen-select js-state form-control" name="state" tabindex="2" required>
+                    <option value=""></option>
+                    <?php foreach (fdb_get_state() as $skey => $sobj):?>
+                        <option value="<?=$sobj->name?>" <?=$state==$sobj->name?'selected':''?>><?=$sobj->name?></option>
+                    <?php endforeach;?>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">City</label>
+            <div class="col-sm-5">
+                <select data-placeholder="Choose a City..." class="chosen-select js-city" name="city" tabindex="2" style="width: 100% !important;">
+                    <option value=""></option>
+                    <?php
+                    //if($cities):
+                        foreach ($cities as $ckey => $cobj):
+                            echo  '<option value="'.$cobj->name.'" ' . selected($city, $cobj->name, false).'>'.$cobj->name.'</option>';
+                        endforeach;
+                    //endif;
+                    ?>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">PIN code</label>
+            <div class="col-sm-5">
+                <input type="text" name="pin" class="form-control" id="pin" placeholder="PIN Code" value="<?=get_user_meta($user->ID, 'pin', true)?>">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">Status</label>
+            <div class="col-sm-5">
+                <select class="form-control" name="user_status">
+                    <option value="0" <?=$user->user_status==0?"selected":""?>>Active</option>
+                    <option value="1" <?=$user->user_status==1?"selected":""?>>De-Active</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-5">
+                <button type="submit" class="btn btn-info pull-right" name="etf-hub-form-submit">Submit</button>
+            </div>
+        </div>
+
+        <div class="clear"></div>
+        <input type="hidden" name="fed_ajax_hook" value="agent_data_update" />
+        <input type="hidden" name="id" value="<?=$_GET['rid']?>">
+        <?php
+        $link = site_url("/dashboard/")."?menu_type=user&menu_slug=agents&fed_nonce=" . wp_create_nonce( 'fed_nonce' );
+        ?>
+        <input type="hidden" name="redirect" value="<?=$link?>">
+        <?php wp_nonce_field('agent-update-nonce') ?>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-5">
+                <div class="et-ajax-loader-global etf-community-module-loader"><span>Processing...</span></div>
+                <div class="etf-community-ajax-feedback"></div>
+            </div>
+        </div>
+
+    </form>
 </div>

@@ -415,6 +415,13 @@ function isms_gen_id($len = 12,$name_cast = 'AG', $state = false){
     return $com_id;
 }
 
+function isms_gen_cust_id($len = 12,$name_cast = 'ISMS'){
+    global $blog_id;
+    $random = substr(number_format(time() * mt_rand(),0,'',''),0,$len);
+    $com_id = "{$name_cast}{$random}";
+    return $com_id;
+}
+
 
 function isms_get_users_by_role($role = "Agent"){
     $user_query = new WP_User_Query( array( 'role' => $role ) );

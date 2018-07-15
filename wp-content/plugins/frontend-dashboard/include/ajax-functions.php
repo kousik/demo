@@ -11,6 +11,10 @@ add_action('fed_update_email_processing', 'fed_update_email_processing', 20);
 add_action('fed_update_password_processing', 'fed_update_password_processing', 20);
 add_action('fed_global_data_update_processing', 'fed_global_data_update_processing', 20);
 
+
+add_action('fed_get_all_agents_processing', 'fed_get_all_agents_processing', 20);
+add_action('fed_delete_user_processing', 'fed_delete_user_processing', 20);
+add_action('fed_agent_data_update_processing', 'fed_agent_data_update_processing', 20);
 //Functions
 
 
@@ -103,6 +107,9 @@ function fed_update_password_processing(){
     die;
 }
 
+/**
+ * AJAX: Global update
+ */
 function fed_global_data_update_processing(){
     global $wpdb;
     if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'agent-nonce' ) ):
@@ -192,3 +199,213 @@ function fed_global_data_update_processing(){
     echo "-1<p class='box alert'>Invalid form submissions!</p>";die;
 }
 
+
+/**
+ * AJAX: get all agents update
+ */
+function fed_get_all_agents_processing(){
+    global $wpdb, $blog_id;
+
+
+    // initilize all variable
+    $params = $columns = $totalRecords = $data = array();
+
+    $params = $_REQUEST;
+
+    //define index of column
+    $columns = array(
+        1 => 'user_login',
+        9 => 'user_status'
+    );
+
+    $where = $join = $groupby = $sqlTot = $sqlRec = "";
+
+    $where = " WHERE 1=1 ";
+
+
+    if( !empty($params['search']['value']) ):
+        $join .= "  INNER JOIN wp_usermeta AS mt1 ON ( wp_users.ID = mt1.user_id ) ";
+        $search_term = esc_attr($params['search']['value']);
+        $where .= "AND ( 
+                      ( 
+                        ( 
+                          ( wp_usermeta.meta_key = 'first_name' AND wp_usermeta.meta_value LIKE '%{$search_term}%' ) 
+                          OR 
+                          ( wp_usermeta.meta_key = 'dist_id' AND wp_usermeta.meta_value LIKE '%{$search_term}%' ) 
+                          OR 
+                          ( wp_usermeta.meta_key = 'target_start' AND wp_usermeta.meta_value LIKE '%{$search_term}%' ) 
+                          OR 
+                          ( wp_usermeta.meta_key = 'target_end' AND wp_usermeta.meta_value LIKE '%{$search_term}%' )
+                        ) 
+                        OR 
+                        ( 
+                          ( 
+                            (user_login LIKE '%{$search_term}%' OR user_email LIKE '%{$search_term}%')
+                          )
+                        )
+                      )
+                    ) AND ( mt1.meta_key = 'wp_capabilities' AND mt1.meta_value LIKE '%Agent%' )";
+    else:
+         $where .= " AND ( 
+                      ( 
+                        ( wp_usermeta.meta_key = 'wp_capabilities' AND wp_usermeta.meta_value LIKE '%Agent%' )
+                      )
+                    )";
+    endif;
+
+    if($params['columns'][10]['search']['value'] >= 1){
+
+        if($params['columns'][10]['search']['value'] == 2) {
+            $where .= " AND  user_status =  1  ";
+        }
+
+        if($params['columns'][10]['search']['value'] == 1) {
+            $where .= " AND  user_status =  0 ";
+        }
+
+
+    }
+
+
+    $args['number'] = $params['start'];
+    $args['offset'] = $params['length'];
+
+    $order_by = $columns[$params['order'][0]['column']]?$columns[$params['order'][0]['column']]:'ID';
+
+    $sqlRec = "SELECT SQL_CALC_FOUND_ROWS wp_users.* FROM wp_users INNER JOIN wp_usermeta ON ( wp_users.ID = wp_usermeta.user_id ) {$join} {$where} GROUP BY wp_users.ID ORDER BY {$order_by} {$params['order'][0]['dir']} ";
+
+    $sqlTot = $wpdb->get_results($sqlRec);
+    $totalRecords = 0;
+    if($sqlTot):
+        $totalRecords = count($sqlTot);
+    endif;
+
+    $sqlRec = $sqlRec." LIMIT {$params['start']}, {$params['length']}";
+    $queryRecords = $wpdb->get_results($sqlRec);
+
+
+    $data = [];
+    if ( $queryRecords ):
+        $i = 1;
+        foreach ($queryRecords as $user):
+            $row = [];
+            $row['row_id'] = $i;
+            $row['user_login'] = $user->user_login;
+            $row['pwd'] = encrypt_decrypt('decrypt', get_user_meta($user->ID, 'pwd', true));
+            $row['first_name'] = get_user_meta($user->ID, 'first_name', true)?get_user_meta($user->ID, 'first_name', true):"--";
+            $dist_id = get_user_meta($user->ID, 'dist_id', true);
+            if($dist_id):
+                $u = get_user_by('login', $dist_id);
+                $row['dist_id'] =  get_user_meta($u->ID, 'first_name', true)?get_user_meta($u->ID, 'first_name', true)."<br>(ID: ".$u->user_login.")":"ID: ".$u->user_login;
+            else:
+                $row['dist_id'] =  "N/A";
+            endif;
+            $row['target_lead'] =  get_user_meta($user->ID, 'target_lead', true)?get_user_meta($user->ID, 'target_lead', true):0;
+            $row['reg_lead'] =  get_user_meta($user->ID, 'reg_lead', true)?get_user_meta($user->ID, 'reg_lead', true):0;
+            $row['target_start'] = get_user_meta($user->ID, 'target_start', true)?get_user_meta($user->ID, 'target_start', true):"--";
+            $row['target_end'] = get_user_meta($user->ID, 'target_end', true)?get_user_meta($user->ID, 'target_end', true):"--";
+            $row['user_status'] = $user->user_status == 1?'<span class="label label-danger">De-Active</span>':'<span class="label label-success">Active</span>';
+
+            $view_link = site_url("/dashboard/")."?menu_type=user&menu_slug=agents&&fed_nonce=". wp_create_nonce( 'fed_nonce' )."&display=agview&rid=".encrypt_decrypt('encrypt',$user->ID);
+            $edit_link = site_url("/dashboard/")."?menu_type=user&menu_slug=agents&&fed_nonce=". wp_create_nonce( 'fed_nonce' )."&display=agedit&rid=".encrypt_decrypt('encrypt',$user->ID);
+            $row['actions'] =  '<a class="btn btn-info btn-xs" data-action="user_view" href="'.$view_link.'" role="button" alt="View" title="View"><i class="fa fa-eye" aria-hidden="true"></i></a>
+                                <a class="btn btn-warning btn-xs" data-action="user_edit" href="'.$edit_link.'" role="button" alt="Edit" title="Edit"><i class="fa fa-edit" aria-hidden="true"></i></a>
+                                <a class="btn btn-danger btn-xs js-request-delete" href="javascript://" role="button" alt="Delete" data-req="'.encrypt_decrypt('encrypt',$user->ID).'" title="Delete"><i class="fa fa-trash-o" aria-hidden="true"></i></a>';
+            $data[] = $row;
+            $i++;
+        endforeach;
+    endif;
+
+    $json_data = array(
+        "draw"            => intval( $params['draw'] ),
+        "recordsTotal"    => intval( $totalRecords ),
+        "recordsFiltered" => intval($totalRecords),
+        "data"            => $data   // total data array
+    );
+
+    echo json_encode($json_data);  // send data as json format
+    die;
+}
+
+/**
+ *AJAX: user delete
+ */
+function fed_delete_user_processing(){
+    $id = encrypt_decrypt('decrypt', $_POST['id']);
+    require_once(ABSPATH.'wp-admin/includes/user.php' );
+    $res = wp_delete_user( $id );
+    $result = [];
+    if($res):
+        $result['msg'] = '<p class="box tick">User hes been deleted successfully!</p>';
+        $result['delete'] = true;
+    else:
+        $result['msg'] = '<p class="box alert">Some error happen. Please try again later!</p>';
+        $result['delete'] = false;
+    endif;
+    echo json_encode($result);die;
+}
+
+/**
+ * AJAX: Agent update
+ */
+function fed_agent_data_update_processing(){
+    global $wpdb;
+
+    if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'agent-update-nonce' ) ):
+        echo "-1<p class='box alert'>Invalid form submissions!</p>";die;
+    endif;
+
+    $uid = encrypt_decrypt('decrypt', $_POST['id']);
+
+    if ( !$_POST['first_name']):
+        echo "-1<p class='box alert'>Please enter agent name!</p>";die;
+    endif;
+
+    if ( !$_POST['user_email']):
+        echo "-1<p class='box alert'>Please enter agent email id!</p>";die;
+    endif;
+
+    if ( !is_email($_POST['user_email'])):
+        echo "-1<p class='box alert'>Please enter agent valid email id!</p>";die;
+    endif;
+    $user = get_user_by('email', $_POST['user_email']);
+
+    if( $user && ($uid != $user->ID) ):
+        echo "-1<p class='box alert'>Email id already taken, please enter different email!</p>";die;
+    endif;
+
+    if ( !$_POST['mobile_number']):
+        echo "-1<p class='box alert'>Please enter agent mobile number!</p>";die;
+    endif;
+
+
+    $user_data = get_user_by('ID', $uid);
+    $pwd = encrypt_decrypt('decrypt', get_user_meta($uid, 'pwd', true));
+    $new_pwd = $_POST['user_pass'];
+
+    // create the wp hasher to add some salt to the md5 hash
+    require_once( ABSPATH . '/wp-includes/class-phpass.php');
+    $wp_hasher = new PasswordHash(8, TRUE);
+    // check that provided password is correct
+    $check_pwd = $wp_hasher->CheckPassword($new_pwd, $user_data->user_pass);
+
+    if(!$check_pwd):
+        wp_update_user( array( 'ID' => $uid, 'user_pass' => $new_pwd ) );
+        update_user_meta($uid, 'pwd', encrypt_decrypt('encrypt', $new_pwd) );
+    endif;
+
+    wp_update_user( array( 'ID' => $uid, 'user_email' => $_POST['user_email'] ) );
+
+    update_user_meta($uid, 'first_name', $_POST['first_name']);
+    update_user_meta($uid, 'dist_id', $_POST['dist_id']);
+    update_user_meta($uid, 'target_lead', $_POST['target_lead']);
+    update_user_meta($uid, 'target_start', $_POST['target_start']);
+    update_user_meta($uid, 'target_end', $_POST['target_end']);
+    update_user_meta($uid, 'mobile_number', $_POST['mobile_number']);
+    update_user_meta($uid, 'address1', $_POST['address2']);
+    update_user_meta($uid, 'state', $_POST['state']);
+    update_user_meta($uid, 'city', $_POST['city']);
+    update_user_meta($uid, 'pin', $_POST['pin']);
+    $wpdb->query("UPDATE `wp_users` SET user_status = {$_POST['user_status']} WHERE ID = '{$uid}';");
+    echo "<p class='box info'>User agent successfully updated!</p>";die;
+}

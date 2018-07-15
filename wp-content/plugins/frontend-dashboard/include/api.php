@@ -72,6 +72,15 @@ class Isms_API_Controller extends WP_REST_Controller
         ));
 
 
+        register_rest_route($this->base, '/app/signin', array(
+            array(
+                'methods' => 'POST',
+                'callback' => array($this, 'ismas_app_signin'),
+                'permission_callback' => array($this, 'get_items_permissions_check'),
+            )
+        ));
+
+
         /*register_rest_route($this->base, '/app/signin', array(
             array(
                 'methods' => 'POST',
@@ -158,6 +167,18 @@ class Isms_API_Controller extends WP_REST_Controller
         if ( class_exists( 'ismsMobAPI' ) ) :
             $myApi = new ismsMobAPI();
             return $myApi->ismas_verify_otp($request->get_json_params());
+        endif;
+        return array(
+            "status"  => - 1,
+            "message" => "No route was found matching the URL and request method"
+        );
+    }
+
+
+    public function ismas_app_signin($request){
+        if ( class_exists( 'ismsMobAPI' ) ) :
+            $myApi = new ismsMobAPI();
+            return $myApi->ismas_app_signin($request->get_json_params());
         endif;
         return array(
             "status"  => - 1,

@@ -152,6 +152,11 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
             else:
                 return [ 'status' => 0, 'data' => json_decode($mob_verify['response']) ];
             endif;
+            /*if(!$phone_number):
+                return [ 'status' => -1, 'error' => 'error' ];
+            else:
+                return [ 'status' => 0, 'data' => ['data'=>['Details'=> '12345678']] ];
+            endif;*/
         }
 
 
@@ -165,8 +170,32 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
             else:
                 return [ 'status' => 0, 'data' => json_decode($mob_verify['response']) ];
             endif;
+
+            /*if($verify_id != '12345678'):
+                return [ 'status' => -1, 'error' => 'error' ];
+            else:
+                return [ 'status' => 0, 'data' => ['data'=>['Details'=> 'Success']] ];
+            endif;*/
         }
 
+
+        public function ismas_app_signin($post){
+
+            if($post['user_type'] == "customer"):
+                if(!isset($post['mobile_number']) || !$post['mobile_number']):
+                    return [ 'status' => -1, 'error' => 'Mobile number invalid!' ];
+                endif;
+
+                $user_name = isms_gen_cust_id($len = 12);
+                $user_email = $post['user_email'];
+                $random_password = wp_generate_password( $length=12, $include_standard_special_chars=false );
+                $user_id = wp_create_user( $user_name, $random_password, $user_email );
+
+
+            endif;
+
+
+        }
 
         /**
          * @param $phone_number
