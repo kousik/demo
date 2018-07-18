@@ -270,6 +270,88 @@ jq(document).ready(function () {
 
     });
 
+    jq('#customer_table').DataTable({
+        "bProcessing": true,
+        "serverSide": true,
+        "pageLength": 50,
+        "ajax":{
+            url :etajaxurl, // json datasource
+            type: "post",  // type of method  ,GET/POST/DELETE
+            data: {
+                "fed_ajax_hook": "get_all_customers"
+            },
+            error: function(){
+                jq("#customer_table_processing").css("display","none");
+            }
+        },
+        "columns": [
+            {
+                "data": "row_id"
+            },
+            {
+                "data": "user_login"
+            },
+            {
+                "data": "pwd"
+            },
+            {
+                "data": "first_name"
+            },
+            {
+                "data": "agent_id"
+            },
+            {
+                "data": "mobile_number"
+            },
+            {
+                "data": "state"
+            },
+            {
+                "data": "city"
+            },
+            {
+                "data": "pin"
+            },
+            {
+                "data": "user_status"
+            },
+            {
+                "data": "actions"
+            }
+
+        ],
+        "order": [[0, 'asc']],
+        "aoColumnDefs" : [
+            {
+                'bSortable' : false,
+                'aTargets' : [ 0, 2,3,4,5,6,7,8,10 ]
+            }],
+
+        "initComplete": function () {
+            this.api().columns().every(function () {
+                var column = this;
+
+                if (column.index() == 10) {
+                    var select = jq('<select><option value="" selected>Select Status</option></select>')
+                        .appendTo(jq("#filters").find("th").eq(column.index()))
+                        .on('change', function () {
+                            var val = jq.fn.dataTable.util.escapeRegex($(this).val());
+
+                            column.search(val, true, false).draw();
+                        });
+
+                    select.append('<option value="1">Active</option>');
+                    select.append('<option value="2">Deactive</option>');
+                }
+
+                jQuery('[data-toggle="popover"]').popover();
+            });
+
+        }
+
+
+    });
+
 
     //User Delete
     jq("body").delegate(".js-request-delete", "click", function (e) {
@@ -454,4 +536,8 @@ function getParameterByName(name, current_url) {
 function isEmail(email) {
     var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
     return regex.test(email);
+}
+
+function goBack() {
+    window.history.back();
 }

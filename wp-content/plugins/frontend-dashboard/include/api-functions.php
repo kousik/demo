@@ -168,7 +168,17 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
             if(isset($mob_verify['error'])):
                 return [ 'status' => -1, 'error' => json_decode($mob_verify['error']) ];
             else:
-                return [ 'status' => 0, 'data' => json_decode($mob_verify['response']) ];
+                $resp = json_decode($mob_verify['response']);
+                if($resp->Status == "Error"):
+                    return [ 'status' => -1, 'error' => $resp->Details ];
+                else:
+                    $pos = strpos($resp->Details, 'Expired');
+                    if($pos !== false):
+                        return [ 'status' => -1, 'error' => $resp->Details ];
+                    else:
+                        return [ 'status' => 0, 'data' => json_decode($mob_verify['response']) ];
+                    endif;
+                endif;
             endif;
 
             /*if($verify_id != '12345678'):
@@ -190,7 +200,32 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
                 $user_email = $post['user_email'];
                 $random_password = wp_generate_password( $length=12, $include_standard_special_chars=false );
                 $user_id = wp_create_user( $user_name, $random_password, $user_email );
+                if( !is_wp_error( $user_id ) ):
+                    return [ 'status' => -1, 'error' => 'Invalid data submission!' ];
+                endif;
 
+                $u = new WP_User( $user_id );
+                $u->set_role( 'customer' );
+
+                update_user_meta($user_id, 'pwd', $random_password);
+                update_user_meta($user_id, 'agent_id', $post['agent_id']);
+                update_user_meta($user_id, 'mobile_number', $post['mobile_number']);
+                update_user_meta($user_id, 'address1', $post['address1']);
+                update_user_meta($user_id, 'address2', $post['address2']);
+                update_user_meta($user_id, 'state', $post['state']);
+                update_user_meta($user_id, 'city', $post['city']);
+                update_user_meta($user_id, 'pin', $post['pin']);
+
+                update_user_meta($user_id, 'iemi', $post['iemi']);
+                update_user_meta($user_id, 'make', $post['make']);
+                update_user_meta($user_id, 'model', $post['model']);
+                update_user_meta($user_id, 'adddr_ui', encrypt_decrypt('encrypt', $post['adddr_ui']) );
+                update_user_meta($user_id, 'check_term', true);
+
+                $agent = get_user_by("login", $post['agent_id']);
+                $reg_lead = get_user_meta($agent->ID, "reg_lead", true)?get_user_meta($agent->ID, "reg_lead", true):0;
+                $new_reg_lead = $reg_lead + 1;
+                update_user_meta($agent->ID, 'reg_lead', $new_reg_lead);
 
             endif;
 

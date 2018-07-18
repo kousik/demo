@@ -171,6 +171,10 @@ function fed_menu_default_page_custom($rbval, $menus, $index){
         return false;
     }
 
+    if($index == 'customers'){
+        return false;
+    }
+
     return $rbval;
 }
 
@@ -198,6 +202,11 @@ function fed_frontend_dashboard_menu_container_fn( $menu_items, $index) {
         load_template( $template );
     }
 
+
+    if ( isset($menu_items[$index]['menu_slug']) && $menu_items[$index]['menu_slug'] === 'customers' ) {
+        $template = epic_community_template('tpl-customers', '/dashboard/');
+        load_template( $template );
+    }
 
 }
 
