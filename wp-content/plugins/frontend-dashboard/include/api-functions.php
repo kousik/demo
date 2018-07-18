@@ -5,7 +5,7 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
     class ismsMobAPI {
 
         var $api_url;
-        var $api_key = "9cc74e44-ec29-11e6-8c71-00163ef91450";
+        var $api_key = "b6eef69d-8aa3-11e8-a895-0200cd936042";
 
 
         /**
@@ -15,7 +15,7 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
             global $epic;
 
             $this->api_url = "http://2factor.in/API/V1/".$this->api_key."/";
-            $this->otp_tpl = "GLOBALOTP";
+            $this->otp_tpl = "ISMSOTP";
         }
         /**
          * @param $data

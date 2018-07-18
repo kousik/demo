@@ -7,7 +7,7 @@ $details = fed_login_only();
 
 do_action( 'fed_before_login_only_form' );
 ?>
-    <div class="row">
+    <div class="row" style="padding-top: 7%; padding-bottom: 17%;">
         <div class="col-md-6 col-md-offset-3">
 
             <!-- Tab panes -->
@@ -15,7 +15,7 @@ do_action( 'fed_before_login_only_form' );
                     <div class="bc_fed container fed_login_container">
                         <?php echo fed_loader(); ?>
                         <div class="row">
-                            <div class="col-xs-12 col-md-8" style="padding-left: 0px;">
+                            <div class="col-xs-12 col-md-10" style="padding-left: 0px;">
                                 <div class="panel panel-primary" style="border-radius: 0px;">
                                     <div class="panel-heading">
                                         <h3 class="panel-title"><?php echo $details['menu']['name']; ?></h3>
@@ -43,18 +43,18 @@ do_action( 'fed_before_login_only_form' );
                                                         <button class="btn btn-primary" type="submit"><?php echo $details['button'] ?></button>
                                                     </div>
                                                     <div class="col-md-12 padd_top_20 text-center">
-                                                        <?php if ( $reg = fed_get_registration_url() ) {
+                                                        <?php /*if ( $reg = fed_get_registration_url() ) {
                                                             $redirect = '';
                                                             if(isset($_GET['redirect_to']) && $_GET['redirect_to']){
                                                                 $redirect = '?redirect_to='.$_GET['redirect_to'];
                                                             }
-                                                            ?>
-                                                            <a href="<?php echo $reg.$redirect; ?>" style="margin-right: 20px;">
-                                                                <?php _e( 'Don\'t have an account? Sign Up Now', 'frontend-dashboard' ) ?>
+                                                            */?><!--
+                                                            <a href="<?php /*echo $reg.$redirect; */?>" style="margin-right: 20px;">
+                                                                <?php /*_e( 'Don\'t have an account? Sign Up Now', 'frontend-dashboard' ) */?>
                                                             </a>
 
-                                                            <?php
-                                                        } ?>
+                                                            --><?php
+/*                                                        } */?>
                                                         <?php if ( $forgot = fed_get_forgot_password_url() ) {
                                                             $redirect = '';
                                                             if(isset($_GET['redirect_to']) && $_GET['redirect_to']){

@@ -89,15 +89,15 @@ function fed_update_password_processing(){
     $user = array('ID' => $userinfo->ID, 'user_pass' => $_POST['password']);
 
     if(current_user_can('agent')):
-        update_user_meta($userinfo->ID, 'pwd', $_POST['password']);
+        update_user_meta($userinfo->ID, 'pwd', encrypt_decrypt('encrypt', $_POST['password']));
     endif;
 
     if(current_user_can('distributor')):
-        update_user_meta($userinfo->ID, 'pwd', $_POST['password']);
+        update_user_meta($userinfo->ID, 'pwd', encrypt_decrypt('encrypt', $_POST['password']));
     endif;
 
     if(current_user_can('customer')):
-        update_user_meta($userinfo->ID, 'pwd', $_POST['password']);
+        update_user_meta($userinfo->ID, 'pwd', encrypt_decrypt('encrypt', $_POST['password']));
     endif;
 
     $update_result = wp_update_user($user);
