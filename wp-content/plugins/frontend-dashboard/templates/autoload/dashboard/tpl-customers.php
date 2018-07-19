@@ -121,6 +121,16 @@ endif;
                                 </tr>
 
                                 <tr>
+                                    <td>Gender:</td>
+                                    <td><?= get_user_meta($uid, 'gender', true) ? get_user_meta($uid, 'gender', true) : "N/A" ?></td>
+                                </tr>
+
+                                <tr>
+                                    <td>DOB:</td>
+                                    <td><?= get_user_meta($uid, 'dob', true) ? get_user_meta($uid, 'dob', true) : "N/A" ?></td>
+                                </tr>
+
+                                <tr>
                                     <td>UUID:</td>
                                     <td><?= get_user_meta($uid, 'adddr_ui', true) ? encrypt_decrypt("decrypt",get_user_meta($uid, 'adddr_ui', true)) : "******" ?>
                                     </td>
