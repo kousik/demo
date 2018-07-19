@@ -77,7 +77,7 @@ endif;
                     <h3 class="panel-title"><?=get_user_meta($uid, 'first_name', true)?></h3>
                 </div>
                 <div class="panel-body">
-                    <div class="row">
+                    <div class="row" id="printarea">
                         <div class="col-md-3 col-lg-3 " align="center"> <img alt="User Pic" src="<?=no_image_url()?>" class="img-circle img-responsive"> </div>
                         <div class=" col-md-9 col-lg-9 ">
                             <h3>Personal Information:</h3>
@@ -93,7 +93,7 @@ endif;
                                 </tr>
                                 <tr>
                                     <td>Login Password:</td>
-                                    <td><?=get_user_meta($uid, 'pwd', true)?get_user_meta($uid, 'pwd', true):"*******"?></td>
+                                    <td><?=get_user_meta($uid, 'pwd', true)?encrypt_decrypt('decrypt',get_user_meta($uid, 'pwd', true)):"*******"?></td>
                                 </tr>
                                 <tr>
                                     <td>E-mail:</td>
@@ -172,6 +172,7 @@ endif;
                 </div>
                 <div class="panel-footer">
                     <a data-original-title="Broadcast Message" data-toggle="tooltip" type="button" class="btn btn-sm btn-primary"><i class="glyphicon glyphicon-envelope"></i></a>
+                    <a id="btn-print" data-original-title="Print" data-head="<?=get_user_meta($uid, 'first_name', true)?>" type="button" class="btn btn-sm btn-info"><i class="glyphicon glyphicon-print"></i></a>
                     <span class="pull-right">
                             <a href="<?=$edit_link?>" data-original-title="Edit this user" data-toggle="tooltip" type="button" class="btn btn-sm btn-warning"><i class="glyphicon glyphicon-edit"></i></a>
                             <!--<a data-original-title="Remove this user" data-toggle="tooltip" type="button" class="btn btn-sm btn-danger js-request-delete" data-redirect="yes" data-url="<?/*=site_url("/dashboard/")."?menu_type=user&menu_slug=agents&&fed_nonce=". wp_create_nonce( 'fed_nonce' )*/?>" data-req="<?/*=encrypt_decrypt('encrypt',$user->ID)*/?>"><i class="glyphicon glyphicon-remove"></i></a>-->

@@ -79,6 +79,15 @@ class Isms_API_Controller extends WP_REST_Controller
                 'permission_callback' => array($this, 'get_items_permissions_check'),
             )
         ));
+    
+    
+        register_rest_route($this->base, '/app/extract/uuid', array(
+            array(
+                'methods' => 'POST',
+                'callback' => array($this, 'ismas_app_extract_uuid'),
+                'permission_callback' => array($this, 'get_items_permissions_check'),
+            )
+        ));
 
 
         /*register_rest_route($this->base, '/app/signin', array(
@@ -179,6 +188,18 @@ class Isms_API_Controller extends WP_REST_Controller
         if ( class_exists( 'ismsMobAPI' ) ) :
             $myApi = new ismsMobAPI();
             return $myApi->ismas_app_signin($request->get_json_params());
+        endif;
+        return array(
+            "status"  => - 1,
+            "message" => "No route was found matching the URL and request method"
+        );
+    }
+    
+    
+    public function ismas_app_extract_uuid($request){
+        if ( class_exists( 'ismsMobAPI' ) ) :
+            $myApi = new ismsMobAPI();
+            return $myApi->ismas_app_extract_uuid($request->get_json_params());
         endif;
         return array(
             "status"  => - 1,

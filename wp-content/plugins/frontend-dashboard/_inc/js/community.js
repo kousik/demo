@@ -70,6 +70,15 @@ jq(document).ready(function () {
         timeFormat: 'HH:mm:ss'
     });
 
+    jq("#btn-print").click(function () {
+        var head = jq(this).attr('data-head');
+        jq("#printarea").printThis({
+            importCSS: false,
+            header: "<h1>"+head+"</h1>",
+            footer: "<a style='text-align: center;'>@ ISMS, 2018</a>"
+        });
+    });
+
     jq("body").delegate("form#etf-hub-form input[name='etf-hub-form-submit'], form#etf-hub-form button[name='etf-hub-form-submit']", "click", function (e) {
         e.preventDefault();
         // submit the form 

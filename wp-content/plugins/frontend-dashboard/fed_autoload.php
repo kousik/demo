@@ -226,6 +226,8 @@ function kv_date_time_js() {
     //wp_enqueue_script('jquery-script', 'http://code.jquery.com/ui/1.10.4/jquery-ui.js');
 
     wp_enqueue_script('jquery-time-picker' ,  plugins_url('_inc/tparty/datetime/jquery-ui-timepicker-addon.js', BC_FED_PLUGIN ),  array('jquery' ), BC_FED_PLUGIN_VERSION, true);
+    
+    wp_enqueue_script('jquery-print' ,  plugins_url('_inc/tparty/print/printThis.js', BC_FED_PLUGIN ),  array('jquery' ), BC_FED_PLUGIN_VERSION, true);
 
 }
 add_action('wp_enqueue_scripts', 'kv_date_time_js', 9);

@@ -18,6 +18,8 @@ add_action('fed_agent_data_update_processing', 'fed_agent_data_update_processing
 
 add_action('fed_get_all_customers_processing', 'fed_get_all_customers_processing', 20);
 add_action('fed_customer_data_update_processing', 'fed_customer_data_update_processing', 20);
+    
+    add_action('fed_user_data_update_processing', 'fed_user_data_update_processing', 20);
 //Functions
 
 
@@ -383,7 +385,7 @@ function fed_agent_data_update_processing(){
 
 
     $user_data = get_user_by('ID', $uid);
-    $pwd = encrypt_decrypt('decrypt', get_user_meta($uid, 'pwd', true));
+    $pwd = encrypt_decrypwp_update_user( array( 'ID' => $uid, 'user_email' => $_POST['user_email'] ) );t('decrypt', get_user_meta($uid, 'pwd', true));
     $new_pwd = $_POST['user_pass'];
 
     // create the wp hasher to add some salt to the md5 hash
@@ -625,4 +627,105 @@ function fed_customer_data_update_processing(){
 
     $wpdb->query("UPDATE `wp_users` SET user_status = {$_POST['user_status']} WHERE ID = '{$uid}';");
     echo "<p class='box info'>Customer successfully updated!</p>";die;
+}
+
+
+function fed_user_data_update_processing(){
+    global $wpdb;
+    if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'userupdate-update-nonce' ) ):
+        echo "-1<p class='box alert'>Invalid form submissions!</p>";die;
+    endif;
+    
+    $uid = encrypt_decrypt('decrypt', $_POST['id']);
+    
+    if($_POST['type'] == "agent"):
+        if ( !$_POST['first_name']):
+            echo "-1<p class='box alert'>Please enter agent name!</p>";die;
+        endif;
+    
+        if ( !$_POST['user_email']):
+            echo "-1<p class='box alert'>Please enter email id!</p>";die;
+        endif;
+    
+        if ( !is_email($_POST['user_email'])):
+            echo "-1<p class='box alert'>Please enter valid email id!</p>";die;
+        endif;
+        $user = get_user_by('email', $_POST['user_email']);
+    
+        if( $user && ($uid != $user->ID) ):
+            echo "-1<p class='box alert'>Email id already taken, please enter different email!</p>";die;
+        endif;
+    
+        if ( !$_POST['mobile_number']):
+            echo "-1<p class='box alert'>Please enter mobile number!</p>";die;
+        endif;
+    
+        if ( !$_POST['address1']):
+            echo "-1<p class='box alert'>Please enter address1!</p>";die;
+        endif;
+    
+        if ( !$_POST['state']):
+            echo "-1<p class='box alert'>Please enter state!</p>";die;
+        endif;
+    
+        if ( !$_POST['city']):
+            echo "-1<p class='box alert'>Please enter city!</p>";die;
+        endif;
+    
+        wp_update_user( array( 'ID' => $uid, 'user_email' => $_POST['user_email'] ) );
+        update_user_meta($uid, 'first_name', $_POST['first_name']);
+        update_user_meta($uid, 'mobile_number', $_POST['mobile_number']);
+        update_user_meta($uid, 'address1', $_POST['address1']);
+        update_user_meta($uid, 'address2', $_POST['address2']);
+        update_user_meta($uid, 'state', $_POST['state']);
+        update_user_meta($uid, 'city', $_POST['city']);
+        update_user_meta($uid, 'pin', $_POST['pin']);
+        echo "<p class='box info'>User agent successfully updated!</p>";die;
+    endif;
+    
+    
+    if($_POST['type'] == "distributor"):
+        if ( !$_POST['first_name']):
+            echo "-1<p class='box alert'>Please enter agent name!</p>";die;
+        endif;
+        
+        if ( !$_POST['user_email']):
+            echo "-1<p class='box alert'>Please enter email id!</p>";die;
+        endif;
+        
+        if ( !is_email($_POST['user_email'])):
+            echo "-1<p class='box alert'>Please enter valid email id!</p>";die;
+        endif;
+        $user = get_user_by('email', $_POST['user_email']);
+        
+        if( $user && ($uid != $user->ID) ):
+            echo "-1<p class='box alert'>Email id already taken, please enter different email!</p>";die;
+        endif;
+        
+        if ( !$_POST['mobile_number']):
+            echo "-1<p class='box alert'>Please enter mobile number!</p>";die;
+        endif;
+        
+        if ( !$_POST['address1']):
+            echo "-1<p class='box alert'>Please enter address1!</p>";die;
+        endif;
+        
+        if ( !$_POST['state']):
+            echo "-1<p class='box alert'>Please enter state!</p>";die;
+        endif;
+        
+        if ( !$_POST['city']):
+            echo "-1<p class='box alert'>Please enter city!</p>";die;
+        endif;
+        
+        wp_update_user( array( 'ID' => $uid, 'user_email' => $_POST['user_email'] ) );
+        update_user_meta($uid, 'first_name', $_POST['first_name']);
+        update_user_meta($uid, 'mobile_number', $_POST['mobile_number']);
+        update_user_meta($uid, 'address1', $_POST['address1']);
+        update_user_meta($uid, 'address2', $_POST['address2']);
+        update_user_meta($uid, 'state', $_POST['state']);
+        update_user_meta($uid, 'city', $_POST['city']);
+        update_user_meta($uid, 'pin', $_POST['pin']);
+        echo "<p class='box info'>User agent successfully updated!</p>";die;
+    endif;
 }

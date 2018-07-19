@@ -7,7 +7,7 @@ $details = fed_login_only();
 
 do_action( 'fed_before_login_only_form' );
 ?>
-    <div class="row" style="padding-top: 7%; padding-bottom: 17%;">
+    <div class="row" style="padding-top: 5%; padding-bottom: 16.5%;">
         <div class="col-md-6 col-md-offset-3">
 
             <!-- Tab panes -->

@@ -8,13 +8,13 @@ $details = fed_forgot_password_only();
 do_action( 'fed_before_forgot_password_only_form' );
 ?>
 
-    <div class="row" style="padding-top: 7%; padding-bottom: 33%;">
+    <div class="row" style="padding-top: 7%; padding-bottom: 23.5%;">
         <div class="col-md-6 col-md-offset-3">
 
             <div class="bc_fed container fed_login_container">
                 <?php echo fed_loader(); ?>
                 <div class="row">
-                    <div class="col-xs-12 col-md-8" style="padding-left: 0px;">
+                    <div class="col-xs-12 col-md-10" style="padding-left: 0px;">
                         <div class="panel panel-primary">
                             <div class="panel-heading">
                                 <h3 class="panel-title text-center" ><?php echo $details['menu']['name']; ?></h3>
@@ -38,8 +38,8 @@ do_action( 'fed_before_forgot_password_only_form' );
                                         }
                                         ?>
                                         <div class="row">
-                                            <div class="col-md-3"></div>
-                                            <div class="col-md-9">
+                                            <div class="col-md-5"></div>
+                                            <div class="col-md-7">
                                                 <input type="hidden"
                                                        name="submit"
                                                        value="Forgot Password"/>

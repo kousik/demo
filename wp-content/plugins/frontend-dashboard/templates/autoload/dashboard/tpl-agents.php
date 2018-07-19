@@ -136,7 +136,7 @@ endif;
                     <h3 class="panel-title"><?=get_user_meta($uid, 'first_name', true)?></h3>
                 </div>
                 <div class="panel-body">
-                    <div class="row">
+                    <div class="row"  id="printarea">
                         <div class="col-md-3 col-lg-3 " align="center"> <img alt="User Pic" src="<?=no_image_url()?>" class="img-circle img-responsive"> </div>
                         <div class=" col-md-9 col-lg-9 ">
                             <table class="table table-user-information">
@@ -153,7 +153,10 @@ endif;
                                     <td>Targeted Leads</td>
                                     <td><?=get_user_meta($uid, 'target_lead', true)?get_user_meta($uid, 'target_lead', true):0?></td>
                                 </tr>
-
+                                <tr>
+                                    <td>Leads Registered</td>
+                                    <td><?=get_user_meta($user->ID, 'reg_lead', true)?get_user_meta($user->ID, 'reg_lead', true):0;?></td>
+                                </tr>
 
                                 <tr>
                                     <td>Targeted Starts</td>
@@ -189,6 +192,7 @@ endif;
                 </div>
                 <div class="panel-footer">
                     <a data-original-title="Broadcast Message" data-toggle="tooltip" type="button" class="btn btn-sm btn-primary"><i class="glyphicon glyphicon-envelope"></i></a>
+                    <a id="btn-print" data-original-title="Print" data-head="<?=get_user_meta($uid, 'first_name', true)?>" type="button" class="btn btn-sm btn-info"><i class="glyphicon glyphicon-print"></i></a>
                     <span class="pull-right">
                             <a href="<?=$edit_link?>" data-original-title="Edit this user" data-toggle="tooltip" type="button" class="btn btn-sm btn-warning"><i class="glyphicon glyphicon-edit"></i></a>
                             <!--<a data-original-title="Close Window" data-toggle="tooltip" type="button" class="btn btn-sm btn-danger js-request-delete" data-redirect="yes" data-url="<?/*=site_url("/dashboard/")."?menu_type=user&menu_slug=agents&&fed_nonce=". wp_create_nonce( 'fed_nonce' )*/?>" data-req="<?/*=encrypt_decrypt('encrypt',$user->ID)*/?>"><i class="glyphicon glyphicon-remove"></i></a>-->
@@ -205,7 +209,7 @@ endif;
     $uid = encrypt_decrypt('decrypt', $_GET['rid']);
     $user = get_user_by('ID', $uid);
     ?>
-    <h2>Edit: Agent : [ <?=$user->user_login?> ]</h2>
+    <h2>Edit agent : [ <?=$user->user_login?> ]</h2>
     <form class="etf-hub-form-agent form-horizontal" id="etf-hub-form-agent" action="<?php echo site_url( 'wp-load.php' );?>" name="etf-community-form" enctype="multipart/form-data" method="post">
         <div class="form-group">
             <label for="inputEmail3" class="col-sm-2 control-label">Name</label>

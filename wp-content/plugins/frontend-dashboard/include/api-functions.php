@@ -127,6 +127,7 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
             if(array_key_exists('customer', $user_info->wp_capabilities)):
                 $role = 'customer';
                 $udata['role'] = $role;
+                $udata['user_registered'] = $user_info->user_registered;
             endif;
             if(array_key_exists('administrator', $user_info->wp_capabilities)):
                 $role = 'administrator';
@@ -135,10 +136,12 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
 
 
             $udata['name'] = get_user_meta($user->ID, 'first_name', true);
+            $udata['user_login'] = $user_info->user_login;
+            $udata['user_email'] = $user_info->user_email;
             $udata['state'] = get_user_meta($user->ID, 'state', true);
             $udata['city'] = get_user_meta($user->ID, 'city', true);
             $udata['address'] = get_user_meta($user->ID, 'address', true);
-            $udata['pin_code'] = get_user_meta($user->ID, 'pin_code', true);
+            $udata['pin'] = get_user_meta($user->ID, 'pin', true);
             $udata['mobile_number'] = get_user_meta($user->ID, 'mobile_number', true);
 
             return $udata;
@@ -215,6 +218,9 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
                 update_user_meta($user_id, 'state', $post['state']);
                 update_user_meta($user_id, 'city', $post['city']);
                 update_user_meta($user_id, 'pin', $post['pin']);
+    
+                update_user_meta($user_id, 'gender', $post['gender']);
+                update_user_meta($user_id, 'dob', $post['dob']);
 
                 update_user_meta($user_id, 'iemi', $post['iemi']);
                 update_user_meta($user_id, 'make', $post['make']);
@@ -226,10 +232,63 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
                 $reg_lead = get_user_meta($agent->ID, "reg_lead", true)?get_user_meta($agent->ID, "reg_lead", true):0;
                 $new_reg_lead = $reg_lead + 1;
                 update_user_meta($agent->ID, 'reg_lead', $new_reg_lead);
-
+                return [ 'status' => 0, 'data' => $user_id ];
             endif;
-
-
+    
+            
+        }
+        
+        
+        public function ismas_app_extract_uuid($post){
+            if(!isset($post['uuid']) || !$post['uuid']):
+                return [ 'status' => -1, 'error' => 'Invalid request!' ];
+            endif;
+    
+            $xmlstring = base64_decode($post['uuid']);
+            //$xmlstring = $post['uuid'];
+            $xml = simplexml_load_string($xmlstring, "SimpleXMLElement", LIBXML_NOCDATA);
+            $json = json_encode($xml);
+            $array = json_decode($json,TRUE);
+    
+            $udata = $array['@attributes'];
+            
+            $data = [];
+            
+            if(empty($udata)):
+                return [ 'status' => -1, 'error' => 'Invalid request!' ];
+            endif;
+            
+            if(isset($udata['uid']) && $udata['uid']):
+                $data['uuid'] = $udata['uid'];
+                $data['name'] = $udata['name'];
+                $data['gender'] = $udata['gender'];
+                $data['dob'] = date('Y-m-d', strtotime($udata['dob']));
+                $data['state'] = $udata['state'];
+                $data['city'] = $udata['dist'];
+                $data['pin'] = $udata['pc'];
+                $data['address1'] = ($udata['house']?$udata['house'].", ":"").($udata['street']?$udata['street'].", ":"").($udata['lm']?$udata['lm'].", ":"").($udata['vtc']?$udata['vtc'].", ":"").($udata['po']?$udata['po'].", ":"").($udata['subdist']?$udata['subdist'].", ":"");
+            endif;
+    
+            if(isset($udata['u']) && $udata['u']):
+                $data['uuid'] = $udata['u'];
+                $data['name'] = $udata['n'];
+                $data['gender'] = $udata['g'];
+                $data['dob'] = date('Y-m-d', strtotime($udata['d']));
+                $pieces = explode(",", $udata['a']);
+                $total = count($pieces);
+                
+                $data['state'] = $pieces[$total-2];
+                $data['city'] = $pieces[$total-3];
+                $data['pin'] = $pieces[$total-1];
+                
+                unset($pieces[$total-1]);
+                unset($pieces[$total-2]);
+                unset($pieces[$total-3]);
+                
+                $data['address1'] = implode(", ", $pieces);
+            endif;
+            return [ 'status' => 0, 'data' => $data ];
+            
         }
 
         /**
