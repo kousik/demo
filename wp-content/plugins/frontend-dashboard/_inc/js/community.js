@@ -70,6 +70,10 @@ jq(document).ready(function () {
         timeFormat: 'HH:mm:ss'
     });
 
+    jq('.date_picker').datepicker({
+        dateFormat: 'yy-mm-dd'
+    });
+
     jq("#btn-print").click(function () {
         var head = jq(this).attr('data-head');
         jq("#printarea").printThis({

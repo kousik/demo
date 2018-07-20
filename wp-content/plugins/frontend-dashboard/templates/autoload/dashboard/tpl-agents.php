@@ -274,7 +274,7 @@ endif;
         <div class="form-group">
             <label for="inputEmail3" class="col-sm-2 control-label">Mobile Number</label>
             <div class="col-sm-5">
-                <input type="text" name="mobile_number" class="form-control" id="mobile_number" placeholder="Mobile Number" value="<?=get_user_meta($user->ID, 'mobile_number', true)?>">
+                <input type="number" maxlength="10" name="mobile_number" class="form-control" id="mobile_number" placeholder="Mobile Number" value="<?=get_user_meta($user->ID, 'mobile_number', true)?>">
             </div>
         </div>
         <div class="form-group">
@@ -324,7 +324,7 @@ endif;
         <div class="form-group">
             <label for="inputEmail3" class="col-sm-2 control-label">PIN code</label>
             <div class="col-sm-5">
-                <input type="text" name="pin" class="form-control" id="pin" placeholder="PIN Code" value="<?=get_user_meta($user->ID, 'pin', true)?>">
+                <input type="number" pattern="\d*" maxlength="6" name="pin" class="form-control" id="pin" placeholder="PIN Code" value="<?=get_user_meta($user->ID, 'pin', true)?>">
             </div>
         </div>
         <div class="form-group">

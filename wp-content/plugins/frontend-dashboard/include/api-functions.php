@@ -219,7 +219,7 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
                 update_user_meta($user_id, 'city', $post['city']);
                 update_user_meta($user_id, 'pin', $post['pin']);
     
-                update_user_meta($user_id, 'gender', $post['gender']);
+                update_user_meta($user_id, 'gender', strtoupper($post['gender']));
                 update_user_meta($user_id, 'dob', $post['dob']);
 
                 update_user_meta($user_id, 'iemi', $post['iemi']);

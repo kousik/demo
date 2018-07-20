@@ -672,6 +672,10 @@ function fed_user_data_update_processing(){
             echo "-1<p class='box alert'>Please enter city!</p>";die;
         endif;
     
+        if ( !$_POST['pin']):
+            echo "-1<p class='box alert'>Please enter pin!</p>";die;
+        endif;
+    
         wp_update_user( array( 'ID' => $uid, 'user_email' => $_POST['user_email'] ) );
         update_user_meta($uid, 'first_name', $_POST['first_name']);
         update_user_meta($uid, 'mobile_number', $_POST['mobile_number']);
@@ -680,7 +684,7 @@ function fed_user_data_update_processing(){
         update_user_meta($uid, 'state', $_POST['state']);
         update_user_meta($uid, 'city', $_POST['city']);
         update_user_meta($uid, 'pin', $_POST['pin']);
-        echo "<p class='box info'>User agent successfully updated!</p>";die;
+        echo "<p class='box info'>Account successfully updated!</p>";die;
     endif;
     
     
@@ -717,6 +721,10 @@ function fed_user_data_update_processing(){
         if ( !$_POST['city']):
             echo "-1<p class='box alert'>Please enter city!</p>";die;
         endif;
+    
+        if ( !$_POST['pin']):
+            echo "-1<p class='box alert'>Please enter pin!</p>";die;
+        endif;
         
         wp_update_user( array( 'ID' => $uid, 'user_email' => $_POST['user_email'] ) );
         update_user_meta($uid, 'first_name', $_POST['first_name']);
@@ -726,6 +734,67 @@ function fed_user_data_update_processing(){
         update_user_meta($uid, 'state', $_POST['state']);
         update_user_meta($uid, 'city', $_POST['city']);
         update_user_meta($uid, 'pin', $_POST['pin']);
-        echo "<p class='box info'>User agent successfully updated!</p>";die;
+        echo "<p class='box info'>Account successfully updated!</p>";die;
+    endif;
+    
+    if($_POST['type'] == "customer"):
+        if ( !$_POST['first_name']):
+            echo "-1<p class='box alert'>Please enter agent name!</p>";die;
+        endif;
+    
+        if ( !$_POST['user_email']):
+            echo "-1<p class='box alert'>Please enter customer email id!</p>";die;
+        endif;
+    
+        if ( !is_email($_POST['user_email'])):
+            echo "-1<p class='box alert'>Please enter agent valid email id!</p>";die;
+        endif;
+        $user = get_user_by('email', $_POST['user_email']);
+    
+        if( $user && ($uid != $user->ID) ):
+            echo "-1<p class='box alert'>Email id already taken, please enter different email!</p>";die;
+        endif;
+    
+        /*if ( !$_POST['mobile_number']):
+            echo "-1<p class='box alert'>Please enter customer mobile number!</p>";die;
+        endif; */
+    
+        if ( !$_POST['gender']):
+            echo "-1<p class='box alert'>Please enter your gender!</p>";die;
+        endif;
+    
+        if ( !$_POST['dob']):
+            echo "-1<p class='box alert'>Please enter your date of birth!</p>";die;
+        endif;
+    
+        if ( !$_POST['address1']):
+            echo "-1<p class='box alert'>Please enter address1!</p>";die;
+        endif;
+    
+        if ( !$_POST['state']):
+            echo "-1<p class='box alert'>Please enter state!</p>";die;
+        endif;
+    
+        if ( !$_POST['city']):
+            echo "-1<p class='box alert'>Please enter city!</p>";die;
+        endif;
+    
+        if ( !$_POST['pin']):
+            echo "-1<p class='box alert'>Please enter pin!</p>";die;
+        endif;
+    
+        wp_update_user( array( 'ID' => $uid, 'user_email' => $_POST['user_email'] ) );
+    
+        update_user_meta($uid, 'first_name', $_POST['first_name']);
+    
+        update_user_meta($uid, 'gender', strtoupper($_POST['gender']));
+        update_user_meta($uid, 'dob', $_POST['dob']);
+        //update_user_meta($uid, 'mobile_number', $_POST['mobile_number']);
+        update_user_meta($uid, 'address1', $_POST['address1']);
+        update_user_meta($uid, 'address2', $_POST['address2']);
+        update_user_meta($uid, 'state', $_POST['state']);
+        update_user_meta($uid, 'city', $_POST['city']);
+        update_user_meta($uid, 'pin', $_POST['pin']);
+        echo "<p class='box info'>Account successfully updated!</p>";die;
     endif;
 }
