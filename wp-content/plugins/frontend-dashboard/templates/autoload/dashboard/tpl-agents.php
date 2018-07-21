@@ -21,7 +21,7 @@ endif;
     <div class="row">
         <div class="col-md-12">
             <div class="response" style="display: none;"></div>
-            <button  class="bth btn-sm btn-success pull-right" data-toggle="modal" data-target="#agentForm"><i class="fa fa-user-circle"></i> Add Agents</button>
+            <a  class="btn btn-info" data-toggle="modal" data-target="#excagentForm"><i class="fa fa-user-circle"></i> Exchange Agent</a> <a  class="btn btn-success pull-right" data-toggle="modal" data-target="#agentForm"><i class="fa fa-user-circle"></i> Add Agents</a>
         </div>
     </div>
     <p class="clear"></p>
@@ -396,6 +396,63 @@ endif;
                 <div class="modal-footer message-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary" name="etf-hub-form-submit">Send message</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="excagentForm" tabindex="-1" role="dialog" aria-labelledby="excagentFormLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Exchange an agent all customers to another agent </h4>
+            </div>
+            <form class="etf-hub-form-mail" id="etf-hub-form-mail" action="<?php echo site_url( 'wp-load.php' );?>" name="etf-community-form" method="post">
+                <div class="modal-body message-body">
+
+                    <div class="form-group">
+                        <label for="inputEmail3" class="control-label">From Agent</label>
+                            <select data-placeholder="Choose a From Agent..." class="chosen-select js-chosen" name="from" tabindex="2" style="width: 100% !important;">
+                                <option value=""></option>
+                                <?php
+                                    $agents = isms_get_users_by_role($role = "Agent");
+                                    if($agents):
+                                    foreach ($agents as $auser):
+                                        echo  '<option value="'.$auser->user_login.'" >'.$auser->user_login.'</option>';
+                                    endforeach;
+                                    endif;
+                                ?>
+                            </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inputEmail3" class="control-label">To Agent</label>
+                            <select data-placeholder="Choose a To Agent..." class="chosen-select js-chosen" name="to" tabindex="2" style="width: 100% !important;">
+                                <option value=""></option>
+                                <?php
+                                    if($agents):
+                                        foreach ($agents as $auser):
+                                            echo  '<option value="'.$auser->user_login.'" >'.$auser->user_login.'</option>';
+                                        endforeach;
+                                    endif;
+                                ?>
+                            </select>
+                    </div>
+                    
+                    <input type="hidden" name="fed_ajax_hook" value="exchange_agent" />
+                    <?php wp_nonce_field('agent-nonce') ?>
+                    
+                    <div class="form-group">
+                        <div class="et-ajax-loader-global etf-community-module-loader"><span>Processing...</span></div>
+                        <div class="etf-community-ajax-feedback"></div>
+                    </div>
+
+                </div>
+                <div class="modal-footer message-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" name="etf-hub-form-submit">Submit</button>
                 </div>
             </form>
         </div>

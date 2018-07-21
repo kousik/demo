@@ -26,6 +26,8 @@ add_action('fed_admin_to_user_mail_processing', 'fed_admin_to_user_mail_processi
 add_action('fed_send_global_email_processing', 'fed_send_global_email_processing', 20);
 
 add_action('fed_send_email_to_admin_processing', 'fed_send_email_to_admin_processing', 20);
+add_action('fed_exchange_agent_processing', 'fed_exchange_agent_processing', 20);
+
 //Functions
 
 
@@ -902,4 +904,57 @@ function fed_send_email_to_admin_processing(){
     $send_result = $mail->send_general_email( $email_body,  $to, $subject);
     
     echo "<p class='box tick'>Question successfully send to our support!</p>";die;
+}
+
+
+function fed_exchange_agent_processing(){
+    global $wpdb;
+    if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'agent-nonce' ) ):
+        echo "-1<p class='box alert'>Invalid form submissions!</p>";die;
+    endif;
+    
+    if ( !$_POST['from']):
+        echo "-1<p class='box alert'>Please select FROM agent!</p>";die;
+    endif;
+    
+    if ( !$_POST['to']):
+        echo "-1<p class='box alert'>Please select TO agent!</p>";die;
+    endif;
+    
+    if ( $_POST['from'] == $_POST['to']):
+        echo "-1<p class='box alert'>FROM & TO agent should not be same!</p>";die;
+    endif;
+    
+    $fuser = get_user_by('login', $_POST['from']);
+    $tuser = get_user_by('login', $_POST['to']);
+    
+    $user_query = new WP_User_Query(
+        array(
+            'role' => 'Customer' ,
+            'meta_query' => array(
+                'relation' => 'AND',
+                array(
+                    'key'     => 'agent_id',
+                    'value'   => $_POST['from'],
+                    'compare' => '='
+                )
+            )
+        )
+    );
+    
+    if ( ! empty( $user_query->get_results() ) ):
+        $cnt = 0;
+        foreach ($user_query->get_results() as $usr):
+            update_user_meta($usr->ID, 'agent_id', $_POST['to']);
+            $cnt++;
+        endforeach;
+    
+        $reg_lead = get_user_meta($tuser->ID, "reg_lead", true)?get_user_meta($tuser->ID, "reg_lead", true):0;
+        $new_reg_lead = $reg_lead + $cnt;
+        update_user_meta($tuser->ID, 'reg_lead', $new_reg_lead);
+    
+        update_user_meta($fuser->ID, 'reg_lead',0);
+        echo "<p class='box tick'>Successfully updated!</p>";die;
+    endif;
+    echo "-1<p class='box alert'>No customer found in FORM agent!</p>";die;
 }
