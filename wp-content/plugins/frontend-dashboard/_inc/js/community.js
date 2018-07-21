@@ -365,6 +365,79 @@ jq(document).ready(function () {
 
     });
 
+    jq('#distributor_table').DataTable({
+        "bProcessing": true,
+        "serverSide": true,
+        "pageLength": 50,
+        "ajax":{
+            url :etajaxurl, // json datasource
+            type: "post",  // type of method  ,GET/POST/DELETE
+            data: {
+                "fed_ajax_hook": "get_all_distributors"
+            },
+            error: function(){
+                jq("#distributor_table_processing").css("display","none");
+            }
+        },
+        "columns": [
+            {
+                "data": "row_id"
+            },
+            {
+                "data": "user_login"
+            },
+            {
+                "data": "pwd"
+            },
+            {
+                "data": "first_name"
+            },
+            {
+                "data": "total_agent"
+            },
+            {
+                "data": "lead_agent"
+            },
+            {
+                "data": "user_status"
+            },
+            {
+                "data": "actions"
+            }
+
+        ],
+        "order": [[0, 'asc']],
+        "aoColumnDefs" : [
+            {
+                'bSortable' : false,
+                'aTargets' : [ 0 ]
+            }],
+
+        "initComplete": function () {
+            this.api().columns().every(function () {
+                var column = this;
+                
+                if (column.index() == 5) {
+                    var select = jq('<select><option value="" selected>Select Status</option></select>')
+                        .appendTo(jq("#filters").find("th").eq(column.index()))
+                        .on('change', function () {
+                            var val = jq.fn.dataTable.util.escapeRegex($(this).val());
+
+                            column.search(val, true, false).draw();
+                        });
+
+                    select.append('<option value="1">Active</option>');
+                    select.append('<option value="2">Deactive</option>');
+                }
+
+                jQuery('[data-toggle="popover"]').popover();
+            });
+
+        }
+
+
+    });
+
 
     //User Delete
     jq("body").delegate(".js-request-delete", "click", function (e) {

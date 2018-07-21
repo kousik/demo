@@ -28,6 +28,8 @@ add_action('fed_send_global_email_processing', 'fed_send_global_email_processing
 add_action('fed_send_email_to_admin_processing', 'fed_send_email_to_admin_processing', 20);
 add_action('fed_exchange_agent_processing', 'fed_exchange_agent_processing', 20);
 
+add_action('fed_get_all_distributors_processing', 'fed_get_all_distributors_processing', 20);
+
 //Functions
 
 
@@ -957,4 +959,127 @@ function fed_exchange_agent_processing(){
         echo "<p class='box tick'>Successfully updated!</p>";die;
     endif;
     echo "-1<p class='box alert'>No customer found in FORM agent!</p>";die;
+}
+
+
+/**
+ * AJAX: get all distributors update
+ */
+function fed_get_all_distributors_processing(){
+    global $wpdb, $blog_id;
+
+
+    // initilize all variable
+    $params = $columns = $totalRecords = $data = array();
+
+    $params = $_REQUEST;
+
+    //define index of column
+    $columns = array(
+        1 => 'user_login',
+        9 => 'user_status'
+    );
+
+    $where = $join = $groupby = $sqlTot = $sqlRec = "";
+
+    $where = " WHERE 1=1 ";
+
+
+    if( !empty($params['search']['value']) ):
+        $join .= "  INNER JOIN wp_usermeta AS mt1 ON ( wp_users.ID = mt1.user_id ) ";
+        $search_term = esc_attr($params['search']['value']);
+        $where .= "AND ( 
+                      ( 
+                        ( 
+                          ( wp_usermeta.meta_key = 'first_name' AND wp_usermeta.meta_value LIKE '%{$search_term}%' ) 
+                          OR 
+                          ( wp_usermeta.meta_key = 'dist_id' AND wp_usermeta.meta_value LIKE '%{$search_term}%' ) 
+                          
+                        ) 
+                        OR 
+                        ( 
+                          ( 
+                            (user_login LIKE '%{$search_term}%' OR user_email LIKE '%{$search_term}%')
+                          )
+                        )
+                      )
+                    ) AND ( mt1.meta_key = 'wp_capabilities' AND mt1.meta_value LIKE '%Distributor%' )";
+    else:
+         $where .= " AND ( 
+                      ( 
+                        ( wp_usermeta.meta_key = 'wp_capabilities' AND wp_usermeta.meta_value LIKE '%Distributor%' )
+                      )
+                    )";
+    endif;
+
+    if($params['columns'][10]['search']['value'] >= 1){
+
+        if($params['columns'][10]['search']['value'] == 2) {
+            $where .= " AND  user_status =  1  ";
+        }
+
+        if($params['columns'][10]['search']['value'] == 1) {
+            $where .= " AND  user_status =  0 ";
+        }
+
+
+    }
+
+
+    $args['number'] = $params['start'];
+    $args['offset'] = $params['length'];
+
+    $order_by = $columns[$params['order'][0]['column']]?$columns[$params['order'][0]['column']]:'ID';
+
+    $sqlRec = "SELECT SQL_CALC_FOUND_ROWS wp_users.* FROM wp_users INNER JOIN wp_usermeta ON ( wp_users.ID = wp_usermeta.user_id ) {$join} {$where} GROUP BY wp_users.ID ORDER BY {$order_by} {$params['order'][0]['dir']} ";
+
+    $sqlTot = $wpdb->get_results($sqlRec);
+    $totalRecords = 0;
+    if($sqlTot):
+        $totalRecords = count($sqlTot);
+    endif;
+
+    $sqlRec = $sqlRec." LIMIT {$params['start']}, {$params['length']}";
+    $queryRecords = $wpdb->get_results($sqlRec);
+
+
+    $data = [];
+    if ( $queryRecords ):
+        $i = 1;
+        foreach ($queryRecords as $user):
+            $row = [];
+            $row['row_id'] = $i;
+            $row['user_login'] = $user->user_login;
+            $row['pwd'] = encrypt_decrypt('decrypt', get_user_meta($user->ID, 'pwd', true));
+            $row['first_name'] = get_user_meta($user->ID, 'first_name', true)?get_user_meta($user->ID, 'first_name', true):"--";
+            $dist_id = get_user_meta($user->ID, 'dist_id', true);
+            if($dist_id):
+                $u = get_user_by('login', $dist_id);
+                $row['dist_id'] =  get_user_meta($u->ID, 'first_name', true)?get_user_meta($u->ID, 'first_name', true)."<br>(ID: ".$u->user_login.")":"ID: ".$u->user_login;
+            else:
+                $row['dist_id'] =  "N/A";
+            endif;
+            $row['total_agent'] = isms_get_total_agents_by_distributor($user->ID);
+            $row['lead_agent']  = isms_get_total_leads_by_agents_single_distributor($user->ID);
+            $row['user_status'] = $user->user_status == 1?'<span class="label label-danger">De-Active</span>':'<span class="label label-success">Active</span>';
+
+            $view_link = site_url("/dashboard/")."?menu_type=user&menu_slug=distributors&&fed_nonce=". wp_create_nonce( 'fed_nonce' )."&display=distview&rid=".encrypt_decrypt('encrypt',$user->ID);
+            $edit_link = site_url("/dashboard/")."?menu_type=user&menu_slug=distributors&&fed_nonce=". wp_create_nonce( 'fed_nonce' )."&display=distedit&rid=".encrypt_decrypt('encrypt',$user->ID);
+            $row['actions'] =  '<a class="btn btn-info btn-xs" data-action="user_view" href="'.$view_link.'" role="button" alt="View" title="View"><i class="fa fa-eye" aria-hidden="true"></i></a>
+                                <a class="btn btn-warning btn-xs" data-action="user_edit" href="'.$edit_link.'" role="button" alt="Edit" title="Edit"><i class="fa fa-edit" aria-hidden="true"></i></a>
+                                <a class="btn btn-danger btn-xs js-request-delete" href="javascript://" role="button" alt="Delete" data-req="'.encrypt_decrypt('encrypt',$user->ID).'" title="Delete"><i class="fa fa-trash-o" aria-hidden="true"></i></a>';
+            $data[] = $row;
+            $i++;
+        endforeach;
+    endif;
+
+    $json_data = array(
+        "draw"            => intval( $params['draw'] ),
+        "recordsTotal"    => intval( $totalRecords ),
+        "recordsFiltered" => intval($totalRecords),
+        "data"            => $data   // total data array
+    );
+
+    echo json_encode($json_data);  // send data as json format
+    die;
 }
