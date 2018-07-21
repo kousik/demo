@@ -24,6 +24,7 @@ endif;
             <button  class="bth btn-sm btn-success pull-right" data-toggle="modal" data-target="#agentForm"><i class="fa fa-user-circle"></i> Add Agents</button>
         </div>
     </div>
+    <p class="clear"></p>
     <div class="row">
         <div class="col-md-12">
             <div class="table-responsive js-table-content">
@@ -191,7 +192,7 @@ endif;
                     </div>
                 </div>
                 <div class="panel-footer">
-                    <a data-original-title="Broadcast Message" data-toggle="tooltip" type="button" class="btn btn-sm btn-primary"><i class="glyphicon glyphicon-envelope"></i></a>
+                    <a data-original-title="Broadcast Message" data-toggle="modal" data-target="#mailleModal" data-whatever="@fat" type="button" class="btn btn-sm btn-primary"><i class="glyphicon glyphicon-envelope"></i></a>
                     <a id="btn-print" data-original-title="Print" data-head="<?=get_user_meta($uid, 'first_name', true)?>" type="button" class="btn btn-sm btn-info"><i class="glyphicon glyphicon-print"></i></a>
                     <span class="pull-right">
                             <a href="<?=$edit_link?>" data-original-title="Edit this user" data-toggle="tooltip" type="button" class="btn btn-sm btn-warning"><i class="glyphicon glyphicon-edit"></i></a>
@@ -358,4 +359,45 @@ endif;
         </div>
 
     </form>
+</div>
+
+<div class="modal fade" id="mailleModal" tabindex="-1" role="dialog" aria-labelledby="mailleModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">New message</h4>
+            </div>
+            <form class="etf-hub-form-mail" id="etf-hub-form-mail" action="<?php echo site_url( 'wp-load.php' );?>" name="etf-community-form" method="post">
+                <div class="modal-body message-body">
+
+                    <div class="form-group">
+                        <label for="recipient-name" class="control-label">Recipient:</label>
+                        <input type="text" class="form-control" id="recipient-name" name="to" value="<?=$user->user_email?>">
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-name" class="control-label">Subject:</label>
+                        <input type="text" class="form-control" id="recipient-sub" name="subject">
+                    </div>
+                    <div class="form-group">
+                        <label for="message-text" class="control-label">Message:</label>
+                        <textarea class="form-control" id="message-text" name="message"></textarea>
+                    </div>
+
+                    <input type="hidden" name="fed_ajax_hook" value="admin_to_user_mail" />
+                    <?php wp_nonce_field('mail-send-nonce') ?>
+                    <input type="hidden" name="user_name" value="<?=get_user_meta($uid, 'first_name', true)?>" />
+                    <div class="form-group">
+                        <div class="et-ajax-loader-global etf-community-module-loader"><span>Processing...</span></div>
+                        <div class="etf-community-ajax-feedback"></div>
+                    </div>
+
+                </div>
+                <div class="modal-footer message-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" name="etf-hub-form-submit">Send message</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>

@@ -540,13 +540,13 @@ class RhMail {
 
 
 
-    public function send_general_email($message='', $to='', $subject='', $user = false){
+    public function send_general_email($message='', $to='', $subject=''){
 
         $subject = $subject;
         $body_html = str_ireplace( '{{message}}', $message, $this->base_template);
 
-        $headers[] = 'From: RoofHub <no-reply@roofhub.com>' . "\r\n";
-        $headers[] = 'Reply-To: no-reply@roofhub.com' . "\r\n";
+        $headers[] = 'From: ISMS <no-reply@ismobilesecurity.com>' . "\r\n";
+        $headers[] = 'Reply-To: no-reply@ismobilesecurity.com' . "\r\n";
         $headers[] = 'Content-Type: text/html; charset=UTF-8';
 
         $send_result = wp_mail( $to, $subject, $body_html, $headers );
@@ -609,45 +609,27 @@ class RhMail {
         ob_end_clean();
         return $message;
     }
-
-
-    public function new_request_email_to_customer($name, $link, $rnumber){
+    
+    public function common_email($name, $message){
         ob_start();
         ?>
-        <h1 style="font-size:30px;">We've received your request.</h1>
         <p style="font-size:17px;padding-right:30px;">
-            Your request number is <strong><?=$rnumber?></strong>.<br><br>
+            Hi <?=$name?>,
+        </p>
+        
+        <p style="font-size:17px;padding-right:30px;">
+            <?=$message?>
+        </p>
 
-            Your request is under process.<br><br>
+        <p style="font-size:17px;padding-right:30px;margin-top:40px">
 
-            In the meantime, you can review your request <a href="<?=$link?>" target="_blank">here</a>.<br><br>
-
-            Thanks in advance for your patience and support.<br><br>
-
-            -The RoofHub Team
+            We’ll send you a few quick e-mails on how to get the most out of ISMS. In the meantime, dive in and <a href="<?=site_url()?>" style="color:#0576b9" target="_blank">start exploring</a>. Again, we’re glad you’re here!
         </p>
         <?php
         $message = ob_get_contents();
         ob_end_clean();
         return $message;
     }
-
-    public function new_request_email_to_admin($name, $link, $rnumber){
-        ob_start();
-        ?>
-        <h1 style="font-size:30px;">You've received a new request from <?=$name?>.</h1>
-        <p style="font-size:17px;padding-right:30px;">
-            Customer request number is <strong><?=$rnumber?></strong>.<br><br>
-
-            In the meantime, you can review new request <a href="<?=$link?>" target="_blank">here</a>.<br><br>
-
-            -The RoofHub Administrator
-        </p>
-        <?php
-        $message = ob_get_contents();
-        ob_end_clean();
-        return $message;
-    }
-
+    
 
 }

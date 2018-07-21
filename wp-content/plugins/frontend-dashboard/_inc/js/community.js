@@ -450,8 +450,8 @@ function etf_hub_form(obj){
             else if (typeof data == 'object')
                 data = objToString(data);
 
-            if( jq("input[name='redirect']").val() && ( data.charAt(0) + data.charAt(1) != '-1' ) ){
-                window.location.href = jq("input[name='redirect']").val();
+            if( jq(form+" input[name='redirect']").val() && ( data.charAt(0) + data.charAt(1) != '-1' ) ){
+                window.location.href = jq(form+" input[name='redirect']").val();
                 return true;
             }
             if ( data.charAt(0) + data.charAt(1) == '-1' ) {
@@ -465,6 +465,11 @@ function etf_hub_form(obj){
                 if( !jq("input[name='noreset']").val() ){
                     jq(form).clearForm();
                     jq(form).resetForm();
+                }
+
+                if(form_class == "etf-hub-form-mail"){
+                    jq("#recipient-sub").val('');
+                    jq("#message-text").val('');
                 }
 
 

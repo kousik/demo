@@ -19,7 +19,13 @@ add_action('fed_agent_data_update_processing', 'fed_agent_data_update_processing
 add_action('fed_get_all_customers_processing', 'fed_get_all_customers_processing', 20);
 add_action('fed_customer_data_update_processing', 'fed_customer_data_update_processing', 20);
     
-    add_action('fed_user_data_update_processing', 'fed_user_data_update_processing', 20);
+add_action('fed_user_data_update_processing', 'fed_user_data_update_processing', 20);
+    
+add_action('fed_admin_to_user_mail_processing', 'fed_admin_to_user_mail_processing', 20);
+
+add_action('fed_send_global_email_processing', 'fed_send_global_email_processing', 20);
+
+add_action('fed_send_email_to_admin_processing', 'fed_send_email_to_admin_processing', 20);
 //Functions
 
 
@@ -413,7 +419,7 @@ function fed_agent_data_update_processing(){
     update_user_meta($uid, 'city', $_POST['city']);
     update_user_meta($uid, 'pin', $_POST['pin']);
     $wpdb->query("UPDATE `wp_users` SET user_status = {$_POST['user_status']} WHERE ID = '{$uid}';");
-    echo "<p class='box info'>User agent successfully updated!</p>";die;
+    echo "<p class='box tick'>User agent successfully updated!</p>";die;
 }
 
 
@@ -626,7 +632,7 @@ function fed_customer_data_update_processing(){
     update_user_meta($uid, 'agent_id', $_POST['agent_id']);
 
     $wpdb->query("UPDATE `wp_users` SET user_status = {$_POST['user_status']} WHERE ID = '{$uid}';");
-    echo "<p class='box info'>Customer successfully updated!</p>";die;
+    echo "<p class='box tick'>Customer successfully updated!</p>";die;
 }
 
 
@@ -684,7 +690,7 @@ function fed_user_data_update_processing(){
         update_user_meta($uid, 'state', $_POST['state']);
         update_user_meta($uid, 'city', $_POST['city']);
         update_user_meta($uid, 'pin', $_POST['pin']);
-        echo "<p class='box info'>Account successfully updated!</p>";die;
+        echo "<p class='box tick'>Account successfully updated!</p>";die;
     endif;
     
     
@@ -734,7 +740,7 @@ function fed_user_data_update_processing(){
         update_user_meta($uid, 'state', $_POST['state']);
         update_user_meta($uid, 'city', $_POST['city']);
         update_user_meta($uid, 'pin', $_POST['pin']);
-        echo "<p class='box info'>Account successfully updated!</p>";die;
+        echo "<p class='box tick'>Account successfully updated!</p>";die;
     endif;
     
     if($_POST['type'] == "customer"):
@@ -795,6 +801,105 @@ function fed_user_data_update_processing(){
         update_user_meta($uid, 'state', $_POST['state']);
         update_user_meta($uid, 'city', $_POST['city']);
         update_user_meta($uid, 'pin', $_POST['pin']);
-        echo "<p class='box info'>Account successfully updated!</p>";die;
+        echo "<p class='box tick'>Account successfully updated!</p>";die;
     endif;
+}
+
+
+function fed_admin_to_user_mail_processing(){
+    global $wpdb;
+    if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'mail-send-nonce' ) ):
+        echo "-1<p class='box alert'>Invalid form submissions!</p>";die;
+    endif;
+    
+    if ( !$_POST['to']):
+        echo "-1<p class='box alert'>Please enter user email!</p>";die;
+    endif;
+    
+    if ( !$_POST['subject']):
+        echo "-1<p class='box alert'>Please enter a message subject!</p>";die;
+    endif;
+    
+    if ( !$_POST['message']):
+        echo "-1<p class='box alert'>Please enter message description!</p>";die;
+    endif;
+    
+    
+    $first_name = $_POST['user_name']?$_POST['user_name']:"User";
+    $mail = new RhMail();
+    $email_body = $mail->common_email($first_name, $_POST['message']);
+    $subject = "ISMS :: ".$_POST['subject'];
+    $send_result = $mail->send_general_email( $email_body,  $_POST['to'], $subject);
+    
+    echo "<p class='box tick'>Message successfully send!</p>";die;
+}
+    
+    
+function fed_send_global_email_processing(){
+        global $wpdb;
+        if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'global-email-nonce' ) ):
+            echo "-1<p class='box alert'>Invalid form submissions!</p>";die;
+        endif;
+        
+        if ( !$_POST['to']):
+            echo "-1<p class='box alert'>Please select email group!</p>";die;
+        endif;
+        
+        if ( !$_POST['subject']):
+            echo "-1<p class='box alert'>Please enter a message subject!</p>";die;
+        endif;
+        
+        if ( !$_POST['message']):
+            echo "-1<p class='box alert'>Please enter message description!</p>";die;
+        endif;
+    
+        $user_query = new WP_User_Query(
+            array(
+                'role' => $_POST['to']
+            )
+        );
+    
+        $mail = new RhMail();
+        $subject = "ISMS :: ".$_POST['subject'];
+    
+        if ( ! empty( $user_query->get_results() ) ):
+            $cnt = 0;
+            foreach ($user_query->get_results() as $usr):
+                if($usr->user_email):
+                    $first_name = get_user_meta($usr->ID, 'first_name', true)?get_user_meta($usr->ID, 'first_name', true):$_POST['to'];
+                    $email_body = $mail->common_email($first_name, $_POST['message']);
+                    $send_result = $mail->send_general_email( $email_body,  $usr->user_email, $subject);
+                endif;
+            endforeach;
+        endif;
+        echo "<p class='box tick'>Message successfully send!</p>";die;
+}
+
+
+function fed_send_email_to_admin_processing(){
+    global $wpdb;
+    if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'user-email-nonce' ) ):
+        echo "-1<p class='box alert'>Invalid form submissions!</p>";die;
+    endif;
+  
+    if ( !$_POST['subject']):
+        echo "-1<p class='box alert'>Please enter your question!</p>";die;
+    endif;
+    
+    if ( !$_POST['message']):
+        echo "-1<p class='box alert'>Please enter question description!</p>";die;
+    endif;
+    
+    $userinfo = wp_get_current_user();
+    
+    $first_name = "Administrator";
+    $mail = new RhMail();
+    $main_message = "<strong>Q. </strong>: ".$_POST['subject']."<br><br>";
+    $main_message .= "<strong>Description </strong>: ".$_POST['message'];
+    $email_body = $mail->common_email($first_name, $main_message);
+    $to = get_option( 'admin_email' );
+    $subject = "ISMS - User Question by - ".$userinfo->user_login;
+    $send_result = $mail->send_general_email( $email_body,  $to, $subject);
+    
+    echo "<p class='box tick'>Question successfully send to our support!</p>";die;
 }

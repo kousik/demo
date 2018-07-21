@@ -237,3 +237,12 @@ header.site-header{background-color: #000;z-index: 1 !important;}
 #distForm div.chosen-container{
     width: 100% !important;
 }
+
+p:last-of-type {
+    padding-bottom: 10px !important;
+}
+
+.bc_fed .alert {
+   padding: 9px 10px 9px 50px !important;
+    border: 1px solid #f0baa2 !important;
+}
