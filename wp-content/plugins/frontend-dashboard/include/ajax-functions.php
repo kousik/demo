@@ -393,7 +393,7 @@ function fed_agent_data_update_processing(){
 
 
     $user_data = get_user_by('ID', $uid);
-    $pwd = encrypt_decrypwp_update_user( array( 'ID' => $uid, 'user_email' => $_POST['user_email'] ) );t('decrypt', get_user_meta($uid, 'pwd', true));
+    $pwd = wp_update_user( array( 'ID' => $uid, 'user_email' => $_POST['user_email'] ) );
     $new_pwd = $_POST['user_pass'];
 
     // create the wp hasher to add some salt to the md5 hash
