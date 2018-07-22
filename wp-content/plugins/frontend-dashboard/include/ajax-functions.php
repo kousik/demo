@@ -308,7 +308,7 @@ function fed_get_all_agents_processing(){
         $i = 1;
         foreach ($queryRecords as $user):
             $row = [];
-            $row['row_id'] = $i;
+            $row['row_id'] = get_avatar($user->ID, 36, "","", ["class" => "img-circle img-responsive"]);
             $row['user_login'] = $user->user_login;
             $row['pwd'] = encrypt_decrypt('decrypt', get_user_meta($user->ID, 'pwd', true));
             $row['first_name'] = get_user_meta($user->ID, 'first_name', true)?get_user_meta($user->ID, 'first_name', true):"--";
@@ -529,7 +529,7 @@ function fed_get_all_customers_processing(){
         $i = 1;
         foreach ($queryRecords as $user):
             $row = [];
-            $row['row_id'] = $i;
+            $row['row_id'] = get_avatar($user->ID, 36, "","", ["class" => "img-circle img-responsive"]);
             $row['user_login'] = $user->user_login;
             $row['pwd'] = get_user_meta($user->ID, 'pwd', true)?encrypt_decrypt('decrypt', get_user_meta($user->ID, 'pwd', true)):"N/A";
             $row['first_name'] = get_user_meta($user->ID, 'first_name', true)?get_user_meta($user->ID, 'first_name', true):"--";
@@ -1078,7 +1078,7 @@ function fed_get_all_distributors_processing(){
         $i = 1;
         foreach ($queryRecords as $user):
             $row = [];
-            $row['row_id'] = $i;
+            $row['row_id'] = get_avatar($user->ID, 36, "","", ["class" => "img-circle img-responsive"]);
             $row['user_login'] = $user->user_login;
             $row['pwd'] = encrypt_decrypt('decrypt', get_user_meta($user->ID, 'pwd', true));
             $row['first_name'] = get_user_meta($user->ID, 'first_name', true)?get_user_meta($user->ID, 'first_name', true):"--";
