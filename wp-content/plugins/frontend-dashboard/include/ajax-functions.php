@@ -30,6 +30,10 @@ add_action('fed_exchange_agent_processing', 'fed_exchange_agent_processing', 20)
 
 add_action('fed_get_all_distributors_processing', 'fed_get_all_distributors_processing', 20);
 
+add_action('fed_distributor_data_update_processing', 'fed_distributor_data_update_processing', 20);
+
+add_action('fed_exchange_distributor_processing', 'fed_exchange_distributor_processing', 20);
+
 //Functions
 
 
@@ -150,7 +154,7 @@ function fed_global_data_update_processing(){
             //$wpdb->query("UPDATE `wp_users` SET user_status = 1 WHERE ID = '{$user_id}';");
             $pwd = encrypt_decrypt('encrypt', $random_password);
             update_user_meta($user_id, 'pwd', $pwd);
-            update_user_meta($user_id, 'target_lead', $_POST['leads_number']?$_POST['leads_number']:1);
+            update_user_meta($user_id, 'target_lead', $_POST['leads_number']?$_POST['leads_number']:50);
             update_user_meta($user_id, 'state', $_POST['state']);
             update_user_meta($user_id, 'state_code', $state_code);
             $u = new WP_User( $user_id );
@@ -197,7 +201,7 @@ function fed_global_data_update_processing(){
                         //$wpdb->query("UPDATE `wp_users` SET user_status = 1 WHERE ID = '{$user_id}';");
                         $pwd = encrypt_decrypt('encrypt', $random_password);
                         update_user_meta($user_id, 'pwd', $pwd);
-                        update_user_meta($user_id, 'target_lead', $_POST['leads_number']?$_POST['leads_number']:1);
+                        update_user_meta($user_id, 'target_lead', $_POST['leads_number']?$_POST['leads_number']:50);
                         update_user_meta($user_id, 'state', $_POST['state']);
                         update_user_meta($user_id, 'state_code', $state_code);
                         update_user_meta($user_id, 'dist_id', $dist_id);
@@ -956,6 +960,13 @@ function fed_exchange_agent_processing(){
         update_user_meta($tuser->ID, 'reg_lead', $new_reg_lead);
     
         update_user_meta($fuser->ID, 'reg_lead',0);
+        
+        $f_target_lead = get_user_meta($fuser->ID, 'target_lead', true)?get_user_meta($fuser->ID, 'target_lead', true):0;
+        
+        $current_t_user_lead = get_user_meta($tuser->ID, 'target_lead', true)?get_user_meta($tuser->ID, 'target_lead', true):0;
+        
+        update_user_meta($tuser->ID, 'target_lead', ($f_target_lead+$current_t_user_lead));
+        
         echo "<p class='box tick'>Successfully updated!</p>";die;
     endif;
     echo "-1<p class='box alert'>No customer found in FORM agent!</p>";die;
@@ -977,7 +988,7 @@ function fed_get_all_distributors_processing(){
     //define index of column
     $columns = array(
         1 => 'user_login',
-        9 => 'user_status'
+        6 => 'user_status'
     );
 
     $where = $join = $groupby = $sqlTot = $sqlRec = "";
@@ -1012,13 +1023,13 @@ function fed_get_all_distributors_processing(){
                     )";
     endif;
 
-    if($params['columns'][10]['search']['value'] >= 1){
+    if($params['columns'][6]['search']['value'] >= 1){
 
-        if($params['columns'][10]['search']['value'] == 2) {
+        if($params['columns'][6]['search']['value'] == 2) {
             $where .= " AND  user_status =  1  ";
         }
 
-        if($params['columns'][10]['search']['value'] == 1) {
+        if($params['columns'][6]['search']['value'] == 1) {
             $where .= " AND  user_status =  0 ";
         }
 
@@ -1082,4 +1093,112 @@ function fed_get_all_distributors_processing(){
 
     echo json_encode($json_data);  // send data as json format
     die;
+}
+
+function fed_distributor_data_update_processing(){
+    global $wpdb;
+    
+    if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'distributor-update-nonce' ) ):
+        echo "-1<p class='box alert'>Invalid form submissions!</p>";die;
+    endif;
+    
+    $uid = encrypt_decrypt('decrypt', $_POST['id']);
+    
+    if ( !$_POST['first_name']):
+        echo "-1<p class='box alert'>Please enter distributor name!</p>";die;
+    endif;
+    
+    if ( !$_POST['user_email']):
+        echo "-1<p class='box alert'>Please enter distributor email id!</p>";die;
+    endif;
+    
+    if ( !is_email($_POST['user_email'])):
+        echo "-1<p class='box alert'>Please enter distributor valid email id!</p>";die;
+    endif;
+    $user = get_user_by('email', $_POST['user_email']);
+    
+    if( $user && ($uid != $user->ID) ):
+        echo "-1<p class='box alert'>Email id already taken, please enter different email!</p>";die;
+    endif;
+    
+    if ( !$_POST['mobile_number']):
+        echo "-1<p class='box alert'>Please enter distributor mobile number!</p>";die;
+    endif;
+    
+    
+    $user_data = get_user_by('ID', $uid);
+    $pwd = encrypt_decrypt('decrypt', get_user_meta($uid, 'pwd', true));
+    $new_pwd = $_POST['user_pass'];
+    
+    // create the wp hasher to add some salt to the md5 hash
+    require_once( ABSPATH . '/wp-includes/class-phpass.php');
+    $wp_hasher = new PasswordHash(8, TRUE);
+    // check that provided password is correct
+    $check_pwd = $wp_hasher->CheckPassword($new_pwd, $user_data->user_pass);
+    
+    if(!$check_pwd):
+        wp_update_user( array( 'ID' => $uid, 'user_pass' => $new_pwd ) );
+        update_user_meta($uid, 'pwd', encrypt_decrypt('encrypt', $new_pwd) );
+    endif;
+    
+    wp_update_user( array( 'ID' => $uid, 'user_email' => $_POST['user_email'] ) );
+    
+    update_user_meta($uid, 'first_name', $_POST['first_name']);
+    update_user_meta($uid, 'mobile_number', $_POST['mobile_number']);
+    update_user_meta($uid, 'address1', $_POST['address1']);
+    update_user_meta($uid, 'address2', $_POST['address2']);
+    update_user_meta($uid, 'state', $_POST['state']);
+    update_user_meta($uid, 'city', $_POST['city']);
+    update_user_meta($uid, 'pin', $_POST['pin']);
+    
+    
+    $wpdb->query("UPDATE `wp_users` SET user_status = {$_POST['user_status']} WHERE ID = '{$uid}';");
+    echo "<p class='box tick'>Distributor successfully updated!</p>";die;
+}
+
+
+function fed_exchange_distributor_processing(){
+    global $wpdb;
+    if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'distributor-nonce' ) ):
+        echo "-1<p class='box alert'>Invalid form submissions!</p>";die;
+    endif;
+    
+    if ( !$_POST['from']):
+        echo "-1<p class='box alert'>Please select FROM distributor!</p>";die;
+    endif;
+    
+    if ( !$_POST['to']):
+        echo "-1<p class='box alert'>Please select TO distributor!</p>";die;
+    endif;
+    
+    if ( $_POST['from'] == $_POST['to']):
+        echo "-1<p class='box alert'>FROM & TO distributor should not be same!</p>";die;
+    endif;
+    
+    $fuser = get_user_by('login', $_POST['from']);
+    $tuser = get_user_by('login', $_POST['to']);
+    
+    $user_query = new WP_User_Query(
+        array(
+            'role' => 'Agent' ,
+            'meta_query' => array(
+                'relation' => 'AND',
+                array(
+                    'key'     => 'dist_id',
+                    'value'   => $_POST['from'],
+                    'compare' => '='
+                )
+            )
+        )
+    );
+    
+    if ( ! empty( $user_query->get_results() ) ):
+        $cnt = 0;
+        foreach ($user_query->get_results() as $usr):
+            update_user_meta($usr->ID, 'dist_id', $_POST['to']);
+            $cnt++;
+        endforeach;
+        echo "<p class='box tick'>Successfully updated!</p>";die;
+    endif;
+    echo "-1<p class='box alert'>No agent found in FORM distributor!</p>";die;
 }

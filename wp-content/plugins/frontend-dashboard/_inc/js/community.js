@@ -410,14 +410,14 @@ jq(document).ready(function () {
         "aoColumnDefs" : [
             {
                 'bSortable' : false,
-                'aTargets' : [ 0 ]
+                'aTargets' : [ 0,2,3,4,5,7]
             }],
 
         "initComplete": function () {
             this.api().columns().every(function () {
                 var column = this;
                 
-                if (column.index() == 5) {
+                if (column.index() == 6) {
                     var select = jq('<select><option value="" selected>Select Status</option></select>')
                         .appendTo(jq("#filters").find("th").eq(column.index()))
                         .on('change', function () {

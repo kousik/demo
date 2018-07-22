@@ -177,7 +177,7 @@ p.box, div.box {margin:1em 0 1.5em 0; padding:9px 10px 9px 50px; border-width:1p
     color: white;
 }
 
-.modalform .chosen-container-single, #excagentForm .chosen-container-single{
+.modalform .chosen-container-single, #excagentForm .chosen-container-single, #etf-hub-form .chosen-container-single, #etf-hub-form-dist .chosen-container-single{
     width: 100% !important;
 }
 

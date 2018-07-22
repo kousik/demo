@@ -19,10 +19,10 @@ endif;
 ?>
 <div class="distributors-list" <?=$style?>>
     <div class="row">
-        <!-- <div class="col-md-12">
+         <div class="col-md-12">
             <div class="response" style="display: none;"></div>
             <a  class="btn btn-info" data-toggle="modal" data-target="#excdistributorForm"><i class="fa fa-user-circle"></i> Exchange distributor</a> <a  class="btn btn-success pull-right" data-toggle="modal" data-target="#distributorForm"><i class="fa fa-user-circle"></i> Add distributors</a>
-        </div> -->
+        </div>
     </div>
     <p class="clear"></p>
     <div class="row">
@@ -55,18 +55,24 @@ endif;
             </div>
         </div>
     </div>
+    
     <div class="modal fade" id="distributorForm" tabindex="-1" role="dialog" aria-labelledby="distributorFormLabel">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="exampleModalLabel">Add Bulk distributors</h4>
+                    <h4 class="modal-title" id="exampleModalLabel">Add Bulk Distributors</h4>
                 </div>
                 <div class="modal-body">
                     <form id="etf-hub-form"  action="<?php echo site_url( 'wp-load.php' );?>" method="post">
                         <div class="form-group">
-                            <label for="recipient-name" class="control-label">Number of distributors:</label>
-                            <input type="number" class="form-control" id="distributor_number" name="distributor_number" value="1">
+                            <label for="recipient-name" class="control-label">Number of Distributors:</label>
+                            <input type="number" class="form-control" id="dist_number" name="dist_number" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="message-text" class="control-label">Number of New Agents:</label>
+                            <input type="number" class="form-control" id="agent_number" name="agent_number" value="10">
+                            <small>(New Agents will create for each distributors and automatically assign created new distributors )</small>
                         </div>
                         <div class="form-group">
                             <label for="message-text" class="control-label">Number of Target Leads:</label>
@@ -77,19 +83,19 @@ endif;
                         <div class="form-group">
                             <label for="state" class="control-label"> State </label>
 
-                                <select data-placeholder="Choose a State..." class="chosen-select js-profile-state" name="state" tabindex="2" style="width: 100% !important;" required>
-                                    <option value=""></option>
-                                    <?php foreach (fdb_get_state() as $skey => $sobj):?>
-                                        <option value="<?=$sobj->name?>" data-id="<?=$sobj->id?>" <?=$raw_data->state == $sobj->name?"selected":""?>><?=$sobj->name?></option>
-                                    <?php endforeach;?>
-                                </select>
+                            <select data-placeholder="Choose a State..." class="chosen-select js-profile-state" name="state" tabindex="2" style="width: 100% !important;" required>
+                                <option value=""></option>
+                                <?php foreach (fdb_get_state() as $skey => $sobj):?>
+                                    <option value="<?=$sobj->name?>" data-id="<?=$sobj->id?>" <?=$raw_data->state == $sobj->name?"selected":""?>><?=$sobj->name?></option>
+                                <?php endforeach;?>
+                            </select>
                         </div>
 
                         <div class="form-group" style="display: none;">
                             <label for="city" class="control-label"> City </label>
-                                <select data-placeholder="Choose a City..." class="chosen-select js-profile-city" name="city" tabindex="2">
+                            <select data-placeholder="Choose a City..." class="chosen-select js-profile-city" name="city" tabindex="2">
 
-                                </select>
+                            </select>
                         </div>
 
                         <div class="form-group">
@@ -98,12 +104,12 @@ endif;
 
                         <div class="clear"></div>
                         <input type="hidden" name="fed_ajax_hook" value="global_data_update" />
-                        <input type="hidden" name="type" value="distributors">
+                        <input type="hidden" name="type" value="distributor">
                         <?php
-                        $link = site_url("/dashboard/")."?menu_type=user&menu_slug=distributors&fed_nonce=" . wp_create_nonce( 'fed_nonce' );
+                            $link = site_url("/dashboard/")."?menu_type=user&menu_slug=distributors&fed_nonce=" . wp_create_nonce( 'fed_nonce' );
                         ?>
                         <input type="hidden" name="redirect" value="<?=$link?>">
-                        <?php wp_nonce_field('distributor-nonce') ?>
+                        <?php wp_nonce_field('agent-nonce') ?>
 
                         <div class="form-group">
                             <div class="et-ajax-loader-global etf-community-module-loader"><span>Processing...</span></div>
@@ -120,7 +126,7 @@ endif;
     <?php
     $uid = encrypt_decrypt('decrypt', $_GET['rid']);
     $user = get_user_by('ID', $uid);
-    $edit_link = site_url("/dashboard/")."?menu_type=user&menu_slug=distributors&&fed_nonce=". wp_create_nonce( 'fed_nonce' )."&display=agedit&rid=".encrypt_decrypt('encrypt',$user->ID);
+    $edit_link = site_url("/dashboard/")."?menu_type=user&menu_slug=distributors&&fed_nonce=". wp_create_nonce( 'fed_nonce' )."&display=distedit&rid=".encrypt_decrypt('encrypt',$user->ID);
     ?>
     <div class="row">
         <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 col-xs-offset-0 col-sm-offset-0 col-md-offset-2 col-lg-offset-1 toppad" >
@@ -145,21 +151,12 @@ endif;
                                     <td><a href="javascript://"><?=get_user_meta($uid, 'dist_id', true)?></a></td>
                                 </tr> -->
                                 <tr>
-                                    <td>Targeted Leads</td>
-                                    <td><?=get_user_meta($uid, 'target_lead', true)?get_user_meta($uid, 'target_lead', true):0?></td>
+                                    <td>Total Agents</td>
+                                    <td><?=isms_get_total_agents_by_distributor($uid);?></td>
                                 </tr>
                                 <tr>
-                                    <td>Leads Registered</td>
-                                    <td><?=get_user_meta($user->ID, 'reg_lead', true)?get_user_meta($user->ID, 'reg_lead', true):0;?></td>
-                                </tr>
-
-                                <tr>
-                                    <td>Targeted Starts</td>
-                                    <td><?=get_user_meta($uid, 'target_start', true)?date('d M, Y', strtotime(get_user_meta($uid, 'target_start', true)) ):"N/A"?></td>
-                                </tr>
-                                <tr>
-                                    <td>Targeted Ends</td>
-                                    <td><?=get_user_meta($uid, 'target_end', true)?date('d M, Y', strtotime(get_user_meta($uid, 'target_end', true)) ):"N/A"?></td>
+                                    <td>Total Leads by Agents</td>
+                                    <td><?=isms_get_total_leads_by_agents_single_distributor($uid);?></td>
                                 </tr>
                                 <tr>
                                     <td>Address</td>
@@ -227,24 +224,7 @@ endif;
                 <input type="text" name="user_pass" class="form-control" id="inputPassword3" placeholder="Password" value="<?=$pwd?>">
             </div>
         </div>
-        <div class="form-group">
-            <label for="inputEmail3" class="col-sm-2 control-label">Targeted Leads</label>
-            <div class="col-sm-5">
-                <input type="text" name="target_lead" class="form-control" id="target_lead" placeholder="Targeted Leads" value="<?=get_user_meta($user->ID, 'target_lead', true)?>">
-            </div>
-        </div>
-        <div class="form-group">
-            <label for="inputEmail3" class="col-sm-2 control-label">Targeted Start</label>
-            <div class="col-sm-5">
-                <input type="text" name="target_start" class="form-control date_time_picker" id="target_start" placeholder="Targeted Start" value="<?=get_user_meta($user->ID, 'target_start', true)?>">
-            </div>
-        </div>
-        <div class="form-group">
-            <label for="inputEmail3" class="col-sm-2 control-label">Targeted Ends</label>
-            <div class="col-sm-5">
-                <input type="text" name="target_end" class="form-control date_time_picker" id="target_end" placeholder="Targeted Ends" value="<?=get_user_meta($user->ID, 'target_end', true)?>">
-            </div>
-        </div>
+        
 
         <div class="form-group">
             <label for="inputEmail3" class="col-sm-2 control-label">Mobile Number</label>
@@ -381,9 +361,9 @@ endif;
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Exchange an distributor all customers to another distributor </h4>
+                <h4 class="modal-title" id="exampleModalLabel">Exchange a distributor all agents to another distributor </h4>
             </div>
-            <form class="etf-hub-form-mail" id="etf-hub-form-mail" action="<?php echo site_url( 'wp-load.php' );?>" name="etf-community-form" method="post">
+            <form class="etf-hub-form-dist" id="etf-hub-form-dist" action="<?php echo site_url( 'wp-load.php' );?>" name="etf-community-form" method="post">
                 <div class="modal-body message-body">
 
                     <div class="form-group">
@@ -432,3 +412,4 @@ endif;
         </div>
     </div>
 </div>
+
