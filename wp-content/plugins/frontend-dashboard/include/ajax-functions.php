@@ -427,6 +427,11 @@ function fed_agent_data_update_processing(){
     update_user_meta($uid, 'city', $_POST['city']);
     update_user_meta($uid, 'pin', $_POST['pin']);
     $wpdb->query("UPDATE `wp_users` SET user_status = {$_POST['user_status']} WHERE ID = '{$uid}';");
+    
+    if ( ! empty( $_FILES['user_avatar']['name'] ) ) :
+        isms_user_avater_upload($_FILES, $uid);
+    endif;
+    
     echo "<p class='box tick'>User agent successfully updated!</p>";die;
 }
 
@@ -640,6 +645,11 @@ function fed_customer_data_update_processing(){
     update_user_meta($uid, 'agent_id', $_POST['agent_id']);
 
     $wpdb->query("UPDATE `wp_users` SET user_status = {$_POST['user_status']} WHERE ID = '{$uid}';");
+    
+    if ( ! empty( $_FILES['user_avatar']['name'] ) ) :
+        isms_user_avater_upload($_FILES, $uid);
+    endif;
+    
     echo "<p class='box tick'>Customer successfully updated!</p>";die;
 }
 
@@ -698,6 +708,9 @@ function fed_user_data_update_processing(){
         update_user_meta($uid, 'state', $_POST['state']);
         update_user_meta($uid, 'city', $_POST['city']);
         update_user_meta($uid, 'pin', $_POST['pin']);
+        if ( ! empty( $_FILES['user_avatar']['name'] ) ) :
+            isms_user_avater_upload($_FILES, $uid);
+        endif;
         echo "<p class='box tick'>Account successfully updated!</p>";die;
     endif;
     
@@ -748,6 +761,9 @@ function fed_user_data_update_processing(){
         update_user_meta($uid, 'state', $_POST['state']);
         update_user_meta($uid, 'city', $_POST['city']);
         update_user_meta($uid, 'pin', $_POST['pin']);
+        if ( ! empty( $_FILES['user_avatar']['name'] ) ) :
+            isms_user_avater_upload($_FILES, $uid);
+        endif;
         echo "<p class='box tick'>Account successfully updated!</p>";die;
     endif;
     
@@ -809,6 +825,9 @@ function fed_user_data_update_processing(){
         update_user_meta($uid, 'state', $_POST['state']);
         update_user_meta($uid, 'city', $_POST['city']);
         update_user_meta($uid, 'pin', $_POST['pin']);
+        if ( ! empty( $_FILES['user_avatar']['name'] ) ) :
+            isms_user_avater_upload($_FILES, $uid);
+        endif;
         echo "<p class='box tick'>Account successfully updated!</p>";die;
     endif;
 }
@@ -1153,6 +1172,10 @@ function fed_distributor_data_update_processing(){
     
     
     $wpdb->query("UPDATE `wp_users` SET user_status = {$_POST['user_status']} WHERE ID = '{$uid}';");
+    
+    if ( ! empty( $_FILES['user_avatar']['name'] ) ) :
+        isms_user_avater_upload($_FILES, $uid);
+    endif;
     echo "<p class='box tick'>Distributor successfully updated!</p>";die;
 }
 

@@ -227,7 +227,7 @@ header.site-header{background-color: #000;z-index: 1 !important;}
 }
 
 #main-header {
-    z-index: 5 !important;
+    /*z-index: 5 !important;*/
 }
 
 #agentForm div.chosen-container{

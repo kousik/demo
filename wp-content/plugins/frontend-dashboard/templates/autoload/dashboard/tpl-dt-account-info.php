@@ -32,7 +32,9 @@ endif;
                 </div>
                 <div class="panel-body">
                     <div class="row">
-                        <div class="col-md-3 col-lg-3 " align="center"> <img alt="User Pic" src="<?=no_image_url()?>" class="img-circle img-responsive"> </div>
+                        <div class="col-md-3 col-lg-3 " align="center">
+                            <?=get_avatar($uid, 120, "","", ["class" => "img-circle img-responsive"])?>
+                        </div>
                         <div class=" col-md-9 col-lg-9 ">
                             <table class="table table-user-information">
                                 <tbody>
@@ -100,6 +102,21 @@ endif;
     ?>
     <h2>Edit agent : [ <?=$user->user_login?> ]</h2>
     <form class="etf-hub-form-agent form-horizontal" id="etf-hub-form-agent" action="<?php echo site_url( 'wp-load.php' );?>" name="etf-community-form" enctype="multipart/form-data" method="post">
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">&nbsp;</label>
+            <div class="col-sm-5">
+                <div class="file-field">
+                    <div class="mb-4">
+                        <?=get_avatar($uid, 120, "","", ["class" => "img-circle img-responsive"])?>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <div class="btn btn-mdb-color btn-rounded float-left">
+                            <input type="file" name="user_avatar" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="form-group">
             <label for="inputEmail3" class="col-sm-2 control-label">Name</label>
             <div class="col-sm-5">

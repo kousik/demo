@@ -528,3 +528,114 @@ function isms_get_total_leads_by_agents_single_distributor($id){
         return 0;
     endif;
 }
+
+function isms_user_avater_upload($files, $user_id){
+    // Allowed file extensions/types
+    $mimes = array(
+        'jpg|jpeg|jpe' => 'image/jpeg',
+        'gif'          => 'image/gif',
+        'png'          => 'image/png',
+    );
+    
+    // Front end support - shortcode, bbPress, etc
+    if ( ! function_exists( 'wp_handle_upload' ) )
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+    
+    // Delete old images if successful
+    
+    $old_avatars = get_user_meta( $user_id, 'user_avatar', true );
+    $upload_path = wp_upload_dir();
+    
+    if ( is_array( $old_avatars ) ) {
+        foreach ( $old_avatars as $old_avatar ) {
+            $old_avatar_path = str_replace( $upload_path['baseurl'], $upload_path['basedir'], $old_avatar );
+            @unlink( $old_avatar_path );
+        }
+    }
+    
+    delete_user_meta( $user_id, 'user_avatar' );
+    
+    
+    
+    // Make user_id known to unique_filename_callback function
+    
+    $avatar = wp_handle_upload( $files['user_avatar'], array( 'mimes' => $mimes, 'test_form' => false, 'unique_filename_callback' => 'isms_unique_filename_callback' ) );
+    
+    // Handle failures
+    if ( $avatar && ! isset( $avatar['error'] ) ) {
+        // Save user information (overwriting previous)
+        update_user_meta( $user_id, 'user_avatar', array( 'full' => $avatar['url'] ) );
+    }
+    
+    
+}
+    
+    function isms_unique_filename_callback( $dir, $name, $ext ) {
+        $name = $base_name = sanitize_file_name( time() . '_avatar' );
+        $number = 1;
+        
+        while ( file_exists( $dir . "/$name$ext" ) ) {
+            $name = $base_name . '_' . $number;
+            $number++;
+        }
+        
+        return $name . $ext;
+    }
+    
+    add_filter( 'get_avatar', 'isms_get_avatar', 10, 6 );
+
+function isms_get_avatar($avatar = '', $id_or_email, $size = 96, $default = '', $alt = false, $args = []){
+// Determine if we recive an ID or string
+    if ( is_numeric( $id_or_email ) )
+        $user_id = (int) $id_or_email;
+    elseif ( is_string( $id_or_email ) && ( $user = get_user_by( 'email', $id_or_email ) ) )
+        $user_id = $user->ID;
+    elseif ( is_object( $id_or_email ) && ! empty( $id_or_email->user_id ) )
+        $user_id = (int) $id_or_email->user_id;
+    
+    if ( empty( $user_id ) )
+        return $avatar;
+    
+    $local_avatars = get_user_meta( $user_id, 'user_avatar', true );
+    
+    if ( empty( $local_avatars ) || empty( $local_avatars['full'] ) )
+        return $avatar;
+    
+    $size = (int) $size;
+    
+    if ( empty( $alt ) )
+        $alt = get_the_author_meta( 'display_name', $user_id );
+    
+    // Generate a new size
+    if ( empty( $local_avatars[$size] ) ) {
+        
+        $upload_path      = wp_upload_dir();
+        $avatar_full_path = str_replace( $upload_path['baseurl'], $upload_path['basedir'], $local_avatars['full'] );
+        $image            = wp_get_image_editor( $avatar_full_path );
+        
+        if ( ! is_wp_error( $image ) ) {
+            $image->resize( $size, $size, true );
+            $image_sized = $image->save();
+        }
+        
+        // Deal with original being >= to original image (or lack of sizing ability)
+        $local_avatars[$size] = is_wp_error( $image_sized ) ? $local_avatars[$size] = $local_avatars['full'] : str_replace( $upload_path['basedir'], $upload_path['baseurl'], $image_sized['path'] );
+        
+        // Save updated avatar sizes
+        update_user_meta( $user_id, 'user_avatar', $local_avatars );
+        
+    } elseif ( substr( $local_avatars[$size], 0, 4 ) != 'http' ) {
+        $local_avatars[$size] = home_url( $local_avatars[$size] );
+    }
+    
+    $author_class = is_author( $user_id ) ? ' current-author' : '' ;
+    
+    if($args && isset($args['class'])){
+        $class = 'class="'.$args['class'].'"';
+    } else{
+        $class = 'class="avatar avatar-'.$size.$author_class.' photo';
+    }
+    $avatar       = "<img alt='" . esc_attr( $alt ) . "' src='" . $local_avatars[$size] . "' {$class} height='{$size}' width='{$size}' />";
+    
+    return apply_filters( 'basic_user_avatar', $avatar );
+}

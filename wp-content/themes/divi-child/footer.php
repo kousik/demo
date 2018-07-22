@@ -37,13 +37,14 @@ if ( ! is_page_template( 'page-template-blank.php' ) ) : ?>
 
 				<div id="footer-bottom">
 					<div class="container clearfix">
-				<?php
-					if ( false !== et_get_option( 'show_footer_social_icons', true ) ) {
-						get_template_part( 'includes/social_icons', 'footer' );
-					}
-				?>
+                        <?php
+                            if ( false !== et_get_option( 'show_footer_social_icons', true ) ) {
+                                get_template_part( 'includes/social_icons', 'footer' );
+                            }
+                            echo et_get_footer_credits();
+                        ?>
 
-						<p id="footer-info">Copyright &copy; <?php echo date("Y") ?> <a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a><!-- | <em>Website by <a target="_blank" title="Napa Web Designer" href="http://designsbytierney.com">David Tierney</a></em>--></p>
+                        <!--<p id="footer-info">&copy; <?php echo date("Y") ?> <a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a> | <em>Website by <a target="_blank" title="Napa Web Designer" href="http://designsbytierney.com">David Tierney</a></em></p>-->
 					</div>	<!-- .container -->
 				</div>
 			</footer> <!-- #main-footer -->
