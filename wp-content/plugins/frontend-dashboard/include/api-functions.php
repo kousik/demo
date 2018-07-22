@@ -150,16 +150,16 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
 
         public function ismas_send_otp($phone_number){
             $mob_verify = $this->sendOtp($phone_number);
-            /*if(isset($mob_verify['error'])):
+            if(isset($mob_verify['error'])):
                 return [ 'status' => -1, 'error' => json_decode($mob_verify['error']) ];
             else:
                 return [ 'status' => 0, 'data' => json_decode($mob_verify['response']) ];
-            endif;*/
-            if(!$phone_number):
+            endif;
+            /*if(!$phone_number):
                 return [ 'status' => -1, 'error' => 'error' ];
             else:
                 return [ 'status' => 0, 'data' => ['data'=>['Details'=> '12345678']] ];
-            endif;
+            endif;*/
         }
 
 
@@ -183,12 +183,24 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
                     endif;
                 endif;
             endif;*/
+    
+            $mob_verify = $this->verifyOtp($verify_id, $input_otp);
+            if(isset($mob_verify['error'])):
+                return [ 'status' => -1, 'error' => json_decode($mob_verify['error']) ];
+            else:
+                $resp = json_decode($mob_verify['response']);
+                if($resp->Status == "Error"):
+                    return [ 'status' => -1, 'error' => $resp->Details ];
+                else:
+                    return [ 'status' => 0, 'data' => json_decode($mob_verify['response']) ];
+                endif;
+            endif;
 
-            if($verify_id != '12345678'):
+            /*if($verify_id != '12345678'):
                 return [ 'status' => -1, 'error' => 'error' ];
             else:
                 return [ 'status' => 0, 'data' => ['data'=>['Details'=> 'Success']] ];
-            endif;
+            endif;*/
         }
 
 
