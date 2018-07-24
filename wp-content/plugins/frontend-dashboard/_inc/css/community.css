@@ -226,8 +226,8 @@ header.site-header{background-color: #000;z-index: 1 !important;}
     padding-bottom: 20%;
 }
 
-#main-header {
-    /*z-index: 5 !important;*/
+#main-header, #top-header {
+    z-index: 5 !important;
 }
 
 #agentForm div.chosen-container{
