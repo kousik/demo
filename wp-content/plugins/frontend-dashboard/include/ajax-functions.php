@@ -34,6 +34,8 @@ add_action('fed_distributor_data_update_processing', 'fed_distributor_data_updat
 
 add_action('fed_exchange_distributor_processing', 'fed_exchange_distributor_processing', 20);
 
+add_action('fed_export_customer_processing', 'fed_export_customer_processing', 20);
+add_action('fed_delete_file_server_processing', 'fed_delete_file_server_processing', 20);
 //Functions
 
 
@@ -1239,4 +1241,192 @@ function fed_exchange_distributor_processing(){
         echo "<p class='box tick'>Successfully updated!</p>";die;
     endif;
     echo "-1<p class='box alert'>No agent found in FORM distributor!</p>";die;
+}
+
+
+function fed_export_customer_processing(){
+    global $wpdb;
+    if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'export-nonce' ) ):
+        echo "-1<p class='box alert'>Invalid form submissions!</p>";die;
+    endif;
+
+    if($_POST['type'] == "agent"):
+        if ( !$_POST['agent_id']):
+            echo "-1<p class='box alert'>Please select a Agent!</p>";die;
+        endif;
+        $user_query = new WP_User_Query(
+            array(
+                'role' => 'Customer' ,
+                'meta_query' => array(
+                    'relation' => 'AND',
+                    array(
+                        'key'     => 'agent_id',
+                        'value'   => $_POST['agent_id'],
+                        'compare' => '='
+                    )
+                )
+            )
+        );
+
+        if ( ! empty( $user_query->get_results() ) ):
+            $filename = 'Users-of - '.$_POST['agent_id'].'.csv';
+            header("Content-Description: File Transfer");
+            // output headers so that the file is downloaded rather than displayed
+            header('Content-Type: application/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename='.$filename.'');
+
+            // create a file pointer connected to the output stream
+            $output = fopen($filename, 'w');
+
+            // output the column headings
+            fputcsv($output, array('User ID', 'Name', 'Password', 'Email', 'Assigned Agent', 'Registered Date', 'Gender', 'DOB', 'UUID', 'Phone Number', 'Address 1', 'Address 2', 'State', 'City', 'Pin', 'Device IEMI', 'Device MAKE', 'Device MODEL', 'Status'));
+            $user_data = [];
+            foreach ($user_query->get_results() as $user):
+                $user_log_id = $user->user_login;
+                $name = get_user_meta($user->ID, 'first_name', true);
+                $password = get_user_meta($user->ID, 'pwd', true)?encrypt_decrypt('decrypt',get_user_meta($user->ID, 'pwd', true)):"*******";
+                $email = $user->user_email;
+                $agent = $_POST['agent_id'];
+                $reg_date = $user->user_registered;
+                $gender = get_user_meta($user->ID, 'gender', true) ? get_user_meta($user->ID, 'gender', true) : "N/A";
+                $dob = get_user_meta($user->ID, 'dob', true) ? get_user_meta($user->ID, 'dob', true) : "N/A";
+                $uuid =  get_user_meta($user->ID, 'adddr_ui', true) ? encrypt_decrypt("decrypt",get_user_meta($user->ID, 'adddr_ui', true)) : "******";
+
+                $phone = get_user_meta($user->ID, 'mobile_number', true) ? get_user_meta($user->ID, 'mobile_number', true) : "N/A";
+
+                $address1 = get_user_meta($user->ID, 'address1', true)?get_user_meta($user->ID, 'address1', true):"--";
+                $address2 = get_user_meta($user->ID, 'address2', true)?get_user_meta($user->ID, 'address2', true):"--";
+                $state = get_user_meta($user->ID, 'state', true)?get_user_meta($user->ID, 'state', true):"--";
+                $city = get_user_meta($user->ID, 'city', true)?get_user_meta($user->ID, 'city', true):"--";
+                $pin = get_user_meta($user->ID, 'pin', true)?get_user_meta($user->ID, 'pin', true):"--";
+
+                $iemi = get_user_meta($user->ID, 'iemi', true)?get_user_meta($user->ID, 'iemi', true):"N/A";
+
+                $make = get_user_meta($user->ID, 'make', true)?get_user_meta($user->ID, 'make', true):"N/A";
+
+                $model = get_user_meta($user->ID, 'model', true)?get_user_meta($user->ID, 'model', true):"N/A";
+
+                $status = $user->user_status == 1?'De-Active':'Active';
+
+                $user_data[] = [$user_log_id, $name, $password, $email, $agent, $reg_date, $gender, $dob, $uuid, $phone, $address1, $address2, $state, $city, $pin, $iemi, $make, $model, $status];
+            endforeach;
+            foreach ($user_data as $fields) {
+                fputcsv($output, $fields);
+            }
+            fclose($output);
+            flush_rewrite_rules( false );
+            //$a = readfile($filename);
+            echo $filename;
+            die;
+        else:
+            echo "-1<p class='box alert'>Customers not found!</p>";die;
+        endif;
+
+    endif;
+
+
+
+
+
+    if($_POST['type'] == "custom"):
+        if ( !$_POST['from'] && !$_POST['to'] &&  !$_POST['group'] ):
+            echo "-1<p class='box alert'>Please select any options</p>";die;
+        endif;
+
+
+        if ( $_POST['from'] && !$_POST['to'] ):
+            echo "-1<p class='box alert'>Please select to date</p>";die;
+        endif;
+
+        if ( $_POST['from'] && $_POST['to'] ):
+            if ( $_POST['to'] > !$_POST['form'] ):
+                echo "-1<p class='box alert'>To date cant greater than From date</p>";die;
+            endif;
+        endif;
+
+        $where = ' 1=1 ';
+        if($_POST['group']):
+            if($_POST['group'] == "active"):
+                $where .= ' AND wp_users.user_status = 0';
+            endif;
+            if($_POST['group'] == "deactive"):
+                $where .= ' AND wp_users.user_status = 1';
+            endif;
+        endif;
+
+        if ( $_POST['from'] && $_POST['to'] ):
+            $where .= " AND wp_users.user_registered BETWEEN '{$_POST['from']} 00:00:00' AND '{$_POST['to']} 23:59:59'";
+        endif;
+
+
+        $user_query = $wpdb->get_results(
+            "SELECT wp_users.ID
+                    FROM wp_users INNER JOIN wp_usermeta 
+                    ON wp_users.ID = wp_usermeta.user_id 
+                    WHERE {$where} AND wp_usermeta.meta_key = 'wp_capabilities' 
+                    AND wp_usermeta.meta_value LIKE '%customer%' 
+                    ORDER BY wp_users.ID"
+        );
+
+
+        if ( $user_query ):
+            $filename = 'Users-of - '.$_POST['group'].'.csv';
+            header("Content-Description: File Transfer");
+            // output headers so that the file is downloaded rather than displayed
+            header('Content-Type: application/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename='.$filename.'');
+
+            // create a file pointer connected to the output stream
+            $output = fopen($filename, 'w');
+
+            // output the column headings
+            fputcsv($output, array('User ID', 'Name', 'Password', 'Email', 'Assigned Agent', 'Registered Date', 'Gender', 'DOB', 'UUID', 'Phone Number', 'Address 1', 'Address 2', 'State', 'City', 'Pin', 'Device IEMI', 'Device MAKE', 'Device MODEL', 'Status'));
+            $user_data = [];
+            foreach ($user_query as $u):
+                $user = get_user_by('ID', $u->ID);
+                $user_log_id = $user->user_login;
+                $name = get_user_meta($user->ID, 'first_name', true);
+                $password = get_user_meta($user->ID, 'pwd', true)?encrypt_decrypt('decrypt',get_user_meta($user->ID, 'pwd', true)):"*******";
+                $email = $user->user_email;
+                $agent = $_POST['agent_id'];
+                $reg_date = $user->user_registered;
+                $gender = get_user_meta($user->ID, 'gender', true) ? get_user_meta($user->ID, 'gender', true) : "N/A";
+                $dob = get_user_meta($user->ID, 'dob', true) ? get_user_meta($user->ID, 'dob', true) : "N/A";
+                $uuid =  get_user_meta($user->ID, 'adddr_ui', true) ? encrypt_decrypt("decrypt",get_user_meta($user->ID, 'adddr_ui', true)) : "******";
+
+                $phone = get_user_meta($user->ID, 'mobile_number', true) ? get_user_meta($user->ID, 'mobile_number', true) : "N/A";
+
+                $address1 = get_user_meta($user->ID, 'address1', true)?get_user_meta($user->ID, 'address1', true):"--";
+                $address2 = get_user_meta($user->ID, 'address2', true)?get_user_meta($user->ID, 'address2', true):"--";
+                $state = get_user_meta($user->ID, 'state', true)?get_user_meta($user->ID, 'state', true):"--";
+                $city = get_user_meta($user->ID, 'city', true)?get_user_meta($user->ID, 'city', true):"--";
+                $pin = get_user_meta($user->ID, 'pin', true)?get_user_meta($user->ID, 'pin', true):"--";
+
+                $iemi = get_user_meta($user->ID, 'iemi', true)?get_user_meta($user->ID, 'iemi', true):"N/A";
+
+                $make = get_user_meta($user->ID, 'make', true)?get_user_meta($user->ID, 'make', true):"N/A";
+
+                $model = get_user_meta($user->ID, 'model', true)?get_user_meta($user->ID, 'model', true):"N/A";
+
+                $status = $user->user_status == 1?'De-Active':'Active';
+                $user_data[] = [$user_log_id, $name, $password, $email, $agent, $reg_date, $gender, $dob, $uuid, $phone, $address1, $address2, $state, $city, $pin, $iemi, $make, $model, $status];
+            endforeach;
+            foreach ($user_data as $fields) {
+                fputcsv($output, $fields);
+            }
+            fclose($output);
+            flush_rewrite_rules( false );
+            echo $filename;
+            die;
+        else:
+            echo "-1<p class='box alert'>Customers not found!</p>";die;
+        endif;
+    endif;
+}
+
+
+function fed_delete_file_server_processing(){
+    $file = $_POST['file'];
+    unlink($file);
+    echo json_encode(['status'=> true]);die;
 }

@@ -141,6 +141,8 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
             $udata['state'] = get_user_meta($user->ID, 'state', true);
             $udata['city'] = get_user_meta($user->ID, 'city', true);
             $udata['address'] = get_user_meta($user->ID, 'address', true);
+            $udata['corp'] = get_user_meta($user->ID, 'corp', true);
+            $udata['block'] = get_user_meta($user->ID, 'block', true);
             $udata['pin'] = get_user_meta($user->ID, 'pin', true);
             $udata['mobile_number'] = get_user_meta($user->ID, 'mobile_number', true);
             $udata['avatar'] = get_grabavatar_url($user->ID);

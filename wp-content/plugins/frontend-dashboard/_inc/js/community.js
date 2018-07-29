@@ -74,6 +74,10 @@ jq(document).ready(function () {
         dateFormat: 'yy-mm-dd'
     });
 
+    jq('.date_picker_s').datepicker({
+        dateFormat: 'yy-mm-dd'
+    });
+
     jq("#btn-print").click(function () {
         var head = jq(this).attr('data-head');
         jq("#printarea").printThis({
@@ -543,6 +547,49 @@ function etf_hub_form(obj){
                 if(form_class == "etf-hub-form-mail"){
                     jq("#recipient-sub").val('');
                     jq("#message-text").val('');
+                }
+
+                //console.log(form_class);
+                if(form_class == "ag-export form-inline"){
+                    //console.log(form_class);
+                    //window.location.href = "/"+data;
+                    var a = document.createElement('a');
+                    a.href ="/"+data;
+                    // Give filename you wish to download
+                    a.download = data;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+
+                    jq.post(etajaxurl, {
+                        file: data,
+                        fed_ajax_hook: "delete_file_server"
+                    }, function (data) {
+
+                    }, "json");
+
+                    data = "Download complete!"
+                }
+
+                if(form_class == "cst-export form-inline"){
+                    //console.log(form_class);
+                    //window.location.href = "/"+data;
+                    var a = document.createElement('a');
+                    a.href ="/"+data;
+                    // Give filename you wish to download
+                    a.download = data;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+
+                    jq.post(etajaxurl, {
+                        file: data,
+                        fed_ajax_hook: "delete_file_server"
+                    }, function (data) {
+
+                    }, "json");
+
+                    data = "Download complete!"
                 }
 
 

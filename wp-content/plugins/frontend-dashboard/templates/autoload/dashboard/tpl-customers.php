@@ -167,11 +167,11 @@ endif;
                                 <tbody>
                                 <tr>
                                     <td>IEMI:</td>
-                                    <td><?=get_user_meta($uid, 'iemi', true)?date('d M, Y', strtotime(get_user_meta($uid, 'iemi', true)) ):"N/A"?></td>
+                                    <td><?=get_user_meta($uid, 'iemi', true)?get_user_meta($uid, 'iemi', true):"N/A"?></td>
                                 </tr>
                                 <tr>
                                     <td>MAKE:</td>
-                                    <td><?=get_user_meta($uid, 'make', true)?date('d M, Y', strtotime(get_user_meta($uid, 'make', true)) ):"N/A"?></td>
+                                    <td><?=get_user_meta($uid, 'make', true)?get_user_meta($uid, 'make', true):"N/A"?></td>
                                 </tr>
                                 <tr>
                                     <td>MODEL</td>
