@@ -88,6 +88,14 @@ class Isms_API_Controller extends WP_REST_Controller
                 'permission_callback' => array($this, 'get_items_permissions_check'),
             )
         ));
+    
+        register_rest_route($this->base, '/app/validate', array(
+            array(
+                'methods' => 'POST',
+                'callback' => array($this, 'ismas_app_validate'),
+                'permission_callback' => array($this, 'get_items_permissions_check'),
+            )
+        ));
 
 
         /*register_rest_route($this->base, '/app/signin', array(
@@ -206,8 +214,17 @@ class Isms_API_Controller extends WP_REST_Controller
             "message" => "No route was found matching the URL and request method"
         );
     }
-
-
+    
+    public function ismas_app_validate($request){
+        if ( class_exists( 'ismsMobAPI' ) ) :
+            $myApi = new ismsMobAPI();
+            return $myApi->ismas_app_validate($request->get_json_params());
+        endif;
+        return array(
+            "status"  => - 1,
+            "message" => "No route was found matching the URL and request method"
+        );
+    }
 
     /*public function epic_elink_add_on_es_server($request){
         if ( class_exists( 'epictionsElinkAPI' ) ) :

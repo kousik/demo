@@ -143,7 +143,7 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
             $udata['address'] = get_user_meta($user->ID, 'address', true);
             $udata['pin'] = get_user_meta($user->ID, 'pin', true);
             $udata['mobile_number'] = get_user_meta($user->ID, 'mobile_number', true);
-
+            $udata['avatar'] = get_grabavatar_url($user->ID);
             return $udata;
         }
 
@@ -169,7 +169,7 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
 
             $mob_verify = $this->verifyOtp($verify_id, $input_otp);
             if(isset($mob_verify['error'])):
-                return [ 'status' => -1, 'error' => json_decode($mob_verify['error']) ];
+                return [ 'status' => -1, 'error' => "Invalid OTP!" ];
             else:
                 $resp = json_decode($mob_verify['response']);
                 if($resp->Status == "Error"):
@@ -324,6 +324,21 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
             $url = $this->api_url.'SMS/VERIFY/'.$verify_id.'/'.$input_otp;
             $data = $this->myCurl($url);
             return $data;
+        }
+        
+        
+        public function ismas_app_validate($post){
+            if($post['type'] == 'email'):
+                if(!$post['email']):
+                    return [ 'status' => -1, 'error' => "Enter E-mail id!" ];
+                else:
+                    $user_data = get_user_by('email', $post['email']);
+                    if($user_data):
+                        return [ 'status' => -1, 'error' => "E-mail id already taken!" ];
+                    endif;
+                endif;
+                return [ 'status' => 0, 'data' => true ];
+            endif;
         }
 
 

@@ -91,11 +91,20 @@ endif;
                             </select>
                         </div>
 
-                        <div class="form-group" style="display: none;">
+                        <div class="form-group">
                             <label for="city" class="control-label"> City </label>
                             <select data-placeholder="Choose a City..." class="chosen-select js-profile-city" name="city" tabindex="2">
 
                             </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message-text" class="control-label">Municipality:</label>
+                            <input type="text" class="form-control" id="corp" name="corp">
+                        </div>
+                        <div class="form-group">
+                            <label for="message-text" class="control-label">Block:</label>
+                            <input type="text" class="form-control" id="block" name="block">
                         </div>
 
                         <div class="form-group">
@@ -168,6 +177,8 @@ endif;
                                         <?=get_user_meta($uid, 'address2', true)?get_user_meta($uid, 'address2', true).",<br>":""?>
                                         <?=get_user_meta($uid, 'state', true)?get_user_meta($uid, 'state', true).",<br>":""?>
                                         <?=get_user_meta($uid, 'city', true)?get_user_meta($uid, 'city', true).", ":""?>
+                                        <?=get_user_meta($uid, 'corp', true)?get_user_meta($uid, 'corp', true).", ":""?>
+                                        <?=get_user_meta($uid, 'block', true)?get_user_meta($uid, 'block', true).", ":""?>
                                         <?=get_user_meta($uid, 'pin', true)?" <strong>PIN :</strong>".get_user_meta($uid, 'pin', true):""?>
                                         </address>
                                     </td>
@@ -291,6 +302,19 @@ endif;
                     //endif;
                     ?>
                 </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">Municipality</label>
+            <div class="col-sm-5">
+                <input type="text" name="corp" class="form-control" id="corp" placeholder="Municipality" value="<?=get_user_meta($user->ID, 'corp', true)?>">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">Block</label>
+            <div class="col-sm-5">
+                <input type="text" name="block" class="form-control" id="block" placeholder="Block" value="<?=get_user_meta($user->ID, 'block', true)?>">
             </div>
         </div>
         <div class="form-group">

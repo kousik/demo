@@ -157,6 +157,9 @@ function fed_global_data_update_processing(){
             update_user_meta($user_id, 'target_lead', $_POST['leads_number']?$_POST['leads_number']:50);
             update_user_meta($user_id, 'state', $_POST['state']);
             update_user_meta($user_id, 'state_code', $state_code);
+            update_user_meta($user_id, 'city', $_POST['city']);
+            update_user_meta($user_id, 'corp', $_POST['corp']);
+            update_user_meta($user_id, 'block', $_POST['block']);
             $u = new WP_User( $user_id );
             $u->set_role( 'agent' );
         endfor;
@@ -187,6 +190,11 @@ function fed_global_data_update_processing(){
             update_user_meta($user_id, 'pwd', $pwd);
             update_user_meta($user_id, 'state', $_POST['state']);
             update_user_meta($user_id, 'state_code', $state_code);
+
+            update_user_meta($user_id, 'city', $_POST['city']);
+            update_user_meta($user_id, 'corp', $_POST['corp']);
+            update_user_meta($user_id, 'block', $_POST['block']);
+
             $u = new WP_User( $user_id );
             $u->set_role( 'distributor' );
             $dist_id = $user_name;
@@ -205,6 +213,9 @@ function fed_global_data_update_processing(){
                         update_user_meta($user_id, 'state', $_POST['state']);
                         update_user_meta($user_id, 'state_code', $state_code);
                         update_user_meta($user_id, 'dist_id', $dist_id);
+                        update_user_meta($user_id, 'city', $_POST['city']);
+                        update_user_meta($user_id, 'corp', $_POST['corp']);
+                        update_user_meta($user_id, 'block', $_POST['block']);
                         $u = new WP_User( $user_id );
                         $u->set_role( 'agent' );
                     endfor;
@@ -426,6 +437,8 @@ function fed_agent_data_update_processing(){
     update_user_meta($uid, 'state', $_POST['state']);
     update_user_meta($uid, 'city', $_POST['city']);
     update_user_meta($uid, 'pin', $_POST['pin']);
+    update_user_meta($uid, 'corp', $_POST['corp']);
+    update_user_meta($uid, 'block', $_POST['block']);
     $wpdb->query("UPDATE `wp_users` SET user_status = {$_POST['user_status']} WHERE ID = '{$uid}';");
     
     if ( ! empty( $_FILES['user_avatar']['name'] ) ) :
@@ -1169,6 +1182,8 @@ function fed_distributor_data_update_processing(){
     update_user_meta($uid, 'state', $_POST['state']);
     update_user_meta($uid, 'city', $_POST['city']);
     update_user_meta($uid, 'pin', $_POST['pin']);
+    update_user_meta($uid, 'corp', $_POST['corp']);
+    update_user_meta($uid, 'block', $_POST['block']);
     
     
     $wpdb->query("UPDATE `wp_users` SET user_status = {$_POST['user_status']} WHERE ID = '{$uid}';");

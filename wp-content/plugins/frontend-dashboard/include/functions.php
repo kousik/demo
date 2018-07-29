@@ -639,3 +639,10 @@ function isms_get_avatar($avatar = '', $id_or_email, $size = 96, $default = '', 
     
     return apply_filters( 'basic_user_avatar', $avatar );
 }
+    
+    
+    function get_grabavatar_url($user_id){
+        $get_avatar = get_avatar($user_id, 80, "","", ["class" => "img-circle img-responsive"]);
+        preg_match("/src='(.*?)'/i", $get_avatar, $matches);
+        return $matches[1];
+    }
