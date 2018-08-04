@@ -207,7 +207,7 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
 
 
         public function ismas_app_signin($post){
-
+            error_log('jkjkjk'.print_r($post, true));
             if($post['user_type'] == "customer"):
                 if(!isset($post['mobile_number']) || !$post['mobile_number']):
                     return [ 'status' => -1, 'error' => 'Mobile number invalid!' ];
@@ -217,14 +217,15 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
                 $user_email = $post['user_email'];
                 $random_password = wp_generate_password( $length=12, $include_standard_special_chars=false );
                 $user_id = wp_create_user( $user_name, $random_password, $user_email );
-                if( !is_wp_error( $user_id ) ):
+                if( is_wp_error( $user_id ) ):
                     return [ 'status' => -1, 'error' => 'Invalid data submission!' ];
                 endif;
 
                 $u = new WP_User( $user_id );
                 $u->set_role( 'customer' );
 
-                update_user_meta($user_id, 'pwd', $random_password);
+                update_user_meta($user_id, 'first_name', $post['name']);
+                update_user_meta($user_id, 'pwd', encrypt_decrypt('encrypt', $random_password) );
                 update_user_meta($user_id, 'agent_id', $post['agent_id']);
                 update_user_meta($user_id, 'mobile_number', $post['mobile_number']);
                 update_user_meta($user_id, 'address1', $post['address1']);
@@ -241,6 +242,7 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
                 update_user_meta($user_id, 'model', $post['model']);
                 update_user_meta($user_id, 'adddr_ui', encrypt_decrypt('encrypt', $post['adddr_ui']) );
                 update_user_meta($user_id, 'check_term', true);
+                update_user_meta( $user_id, 'user_avatar', array( 'full' => $post['avatar'] ) );
 
                 $agent = get_user_by("login", $post['agent_id']);
                 $reg_lead = get_user_meta($agent->ID, "reg_lead", true)?get_user_meta($agent->ID, "reg_lead", true):0;
@@ -250,6 +252,57 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
             endif;
     
             
+        }
+
+
+        public function ismas_app_image_upload($post){
+            //error_log(print_r($_FILES,true) );
+
+            $ifile = $_FILES['file'];
+            // Include image.php
+            require_once( ABSPATH . 'wp-admin/includes/image.php' );
+
+            // Add Featured Image to Post
+            $upload_dir = wp_upload_dir(); // Set upload folder
+            $filename   = $ifile['name']; // Create image file name
+
+
+            // Check folder permission and define file location
+            if ( wp_mkdir_p( $upload_dir['path'] ) ) {
+                $filename = wp_unique_filename( $upload_dir['path'], $filename );
+                $file     = $upload_dir['path'] . '/' . $filename;
+            } else {
+                $filename = wp_unique_filename( $upload_dir['basedir'], $filename );
+                $file     = $upload_dir['basedir'] . '/' . $filename;
+            }
+
+            if (move_uploaded_file($ifile["tmp_name"], $file)) {
+
+                // Check image file type
+                $wp_filetype = wp_check_filetype( $filename, null );
+
+                // Set attachment data
+                $attachment = array(
+                    'post_mime_type' => $wp_filetype['type'],
+                    'post_title'     => sanitize_file_name( $filename ),
+                    'post_content'   => '',
+                    'post_status'    => 'inherit',
+                );
+
+                // Create the attachment
+                $attach_id = wp_insert_attachment( $attachment, $file );
+                $taxonomy_image_url = wp_get_attachment_image_src($attach_id, 'full');
+                $taxonomy_image_url = $taxonomy_image_url[0];
+
+                $imagenew = get_post( $attach_id );
+                $fullsizepath = get_attached_file( $imagenew->ID );
+                $attach_data = wp_generate_attachment_metadata( $attach_id, $fullsizepath );
+                wp_update_attachment_metadata( $attach_id, $attach_data );
+                //return $attach_id;
+                return [ 'location' => $taxonomy_image_url, 'attach_id' => $attach_id ];
+            } else {
+                return [ 'location' => '', 'attach_id' => '' ];
+            }
         }
         
         
@@ -276,7 +329,8 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
                 $data['uuid'] = $udata['uid'];
                 $data['name'] = $udata['name'];
                 $data['gender'] = $udata['gender'];
-                $data['dob'] = date('Y-m-d', strtotime($udata['dob']));
+                $d = str_replace("/", "-", $udata['dob']);
+                $data['dob'] = date('Y-m-d', strtotime($d));
                 $data['state'] = $udata['state'];
                 $data['city'] = $udata['dist'];
                 $data['pin'] = $udata['pc'];
@@ -287,7 +341,8 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
                 $data['uuid'] = $udata['u'];
                 $data['name'] = $udata['n'];
                 $data['gender'] = $udata['g'];
-                $data['dob'] = date('Y-m-d', strtotime($udata['d']));
+                $d = str_replace("/", "-", $udata['dob']);
+                $data['dob'] = date('Y-m-d', strtotime($d));
                 $pieces = explode(",", $udata['a']);
                 $total = count($pieces);
                 
