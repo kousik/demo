@@ -9,7 +9,7 @@
 
 $userinfo = wp_get_current_user();
 
-    if ( current_user_can( 'manage_options' ) ):
+    if ( current_user_can( 'edit_pages' ) ):
 ?>
         <h3>Export Customer Data:</h3>
         <form id="etf-hub-form" name="etf-community-form" class="ag-export form-inline" action="<?php echo site_url( 'wp-load.php' );?>" method="post">

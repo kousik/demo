@@ -197,6 +197,11 @@ function fed_menu_default_page_custom($rbval, $menus, $index){
         return false;
     }
 
+    if($index == 'my_board'){
+        return false;
+    }
+
+
     return $rbval;
 }
 
@@ -253,6 +258,11 @@ function fed_frontend_dashboard_menu_container_fn( $menu_items, $index) {
 
     if ( isset($menu_items[$index]['menu_slug']) && $menu_items[$index]['menu_slug'] === 'export' ) {
         $template = epic_community_template('tpl-export', '/dashboard/');
+        load_template( $template );
+    }
+
+    if ( isset($menu_items[$index]['menu_slug']) && $menu_items[$index]['menu_slug'] === 'my_board' ) {
+        $template = epic_community_template('my-board', '/dashboard/');
         load_template( $template );
     }
 

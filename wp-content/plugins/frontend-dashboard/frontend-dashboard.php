@@ -91,16 +91,33 @@ function tls_database_table_creation(){
     if ( !empty($wpdb->charset) )
         $charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
 
-    $sql[] = "CREATE TABLE IF NOT EXISTS `wp_sponsor_member` (
+    $sql[] = "CREATE TABLE IF NOT EXISTS `wp_cust_notify` (
 		`id` bigint(20) NOT NULL auto_increment,
-		`user_id` int(20) NOT NULL,
-		`ad_id` int(20) NOT NULL,
-		`no_card` int(20) NOT NULL,
-		`used_card` int(20) NOT NULL,
-		`type` int(20) NOT NULL,
+		`sender_user_id` int(20) NOT NULL,
+		`message` varchar(200) NOT NULL,
+		`recp_user_id` int(20) NOT NULL,
+		`is_read` int(1) NOT NULL,
+		`accept` int(1) NOT NULL,
 		`date` datetime default NULL,
 		PRIMARY KEY  (`id`)
 		)  {$charset_collate};";
+
+	$sql[] = "CREATE TABLE IF NOT EXISTS `wp_cust_loc` (
+		`id` bigint(20) NOT NULL auto_increment,
+		`user_id` int(20) NOT NULL,
+		`lat` varchar(100) NOT NULL,
+		`long` varchar(100) NOT NULL,
+		`date` datetime default NULL,
+		PRIMARY KEY  (`id`)
+		)  {$charset_collate};";
+		
+	$sql[] = "CREATE TABLE IF NOT EXISTS `wp_cust_contacts` (
+		`id` bigint(20) NOT NULL auto_increment,
+		`user_id` int(20) NOT NULL,
+		`contacts` longtext NOT NULL,
+		`date` datetime default NULL,
+		PRIMARY KEY  (`id`)
+		)  {$charset_collate};";	
 
 
     foreach( $sql as $table )

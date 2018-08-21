@@ -105,6 +105,30 @@ class Isms_API_Controller extends WP_REST_Controller
             )
         ));
 
+        register_rest_route($this->base, '/app/savelocation', array(
+            array(
+                'methods' => 'POST',
+                'callback' => array($this, 'ismas_app_savelocation'),
+                'permission_callback' => array($this, 'get_items_permissions_check'),
+            )
+        ));
+
+        register_rest_route($this->base, '/app/getlocation', array(
+            array(
+                'methods' => 'POST',
+                'callback' => array($this, 'ismas_app_getlocation'),
+                'permission_callback' => array($this, 'get_items_permissions_check'),
+            )
+        ));
+
+        register_rest_route($this->base, '/app/backup/contacts', array(
+            array(
+                'methods' => 'POST',
+                'callback' => array($this, 'ismas_app_backup_contacts'),
+                'permission_callback' => array($this, 'get_items_permissions_check'),
+            )
+        ));
+
 
         /*register_rest_route($this->base, '/app/signin', array(
             array(
@@ -246,6 +270,40 @@ class Isms_API_Controller extends WP_REST_Controller
         );
     }
 
+
+    public function ismas_app_savelocation($request){
+        if ( class_exists( 'ismsMobAPI' ) ) :
+            $myApi = new ismsMobAPI();
+            return $myApi->ismas_app_savelocation($request->get_json_params());
+        endif;
+        return array(
+            "status"  => - 1,
+            "message" => "No route was found matching the URL and request method"
+        );
+    }
+
+    public function ismas_app_getlocation($request){
+        if ( class_exists( 'ismsMobAPI' ) ) :
+            $myApi = new ismsMobAPI();
+            return $myApi->ismas_app_getlocation($request->get_json_params());
+        endif;
+        return array(
+            "status"  => - 1,
+            "message" => "No route was found matching the URL and request method"
+        );
+    }
+
+
+    public function ismas_app_backup_contacts($request){
+        if ( class_exists( 'ismsMobAPI' ) ) :
+            $myApi = new ismsMobAPI();
+            return $myApi->ismas_app_backup_contacts($request->get_json_params());
+        endif;
+        return array(
+            "status"  => - 1,
+            "message" => "No route was found matching the URL and request method"
+        );
+    }
     /*public function epic_elink_add_on_es_server($request){
         if ( class_exists( 'epictionsElinkAPI' ) ) :
             $myApi = new epictionsElinkAPI();

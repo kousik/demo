@@ -255,6 +255,69 @@ if ( !class_exists( 'ismsMobAPI' ) ) :
         }
 
 
+        public function ismas_app_savelocation($post){
+            global $wpdb;
+            if(!isset($post['user_id']) || !$post['user_id']):
+                return [ 'status' => -1, 'error' => 'Invalid request!' ];
+            endif;
+
+            if(!isset($post['lat']) || !$post['lat']):
+                return [ 'status' => -1, 'error' => 'Invalid request!' ];
+            endif;
+
+            if(!isset($post['long']) || !$post['long']):
+                return [ 'status' => -1, 'error' => 'Invalid request!' ];
+            endif;
+
+            $edata = [];
+            $edata['user_id'] = $post['user_id'];
+            $edata['lat'] = $post['lat'];
+            $edata['long'] = $post['long'];
+            $edata['date'] = date('Y-m-d H:i:s');
+            $wpdb->insert(
+                'wp_cust_loc',
+                $edata,
+                array(
+                    '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s'
+                )
+            );
+            return [ 'status' => 0, 'data' => 'success' ];
+        }
+
+
+        public function ismas_app_getlocation($post){
+            global $wpdb;
+            if(!isset($post['user_id']) || !$post['user_id']):
+                return [ 'status' => -1, 'error' => 'Invalid request!' ];
+            endif;
+            $user_id = $post['user_id'];
+            $locdata = $wpdb->get_row( "SELECT * FROM `wp_cust_loc` WHERE user_id = '{$user_id}' ORDER BY `date` DESC LIMIT 1" );
+            return [ 'status' => 0, 'data' => $locdata ];
+        }
+
+        public function ismas_app_backup_contacts($post){
+            global $wpdb;
+            if(!isset($post['user_id']) || !$post['user_id']):
+                return [ 'status' => -1, 'error' => 'Invalid request!' ];
+            endif;
+            $user_id = $post['user_id'];
+            $edata = [];
+            $edata['user_id'] = $post['user_id'];
+            $edata['contacts'] = $post['contacts'];
+            $edata['date'] = date('Y-m-d H:i:s');
+            $wpdb->insert(
+                'wp_cust_contacts',
+                $edata,
+                array(
+                    '%d', '%s', '%s'
+                )
+            );
+            return [ 'status' => 0, 'data' => 'success' ];
+        }
+
+        
+
+
         public function ismas_app_image_upload($post){
             //error_log(print_r($_FILES,true) );
 
